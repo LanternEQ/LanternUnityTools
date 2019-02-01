@@ -1,0 +1,9 @@
+LanternUnity/.idea/
+LanternUnity/Assets/ZoneExports/
+LanternUnity/Library/
+LanternUnity/Temp/
+LanternUnity/Assets/Plugins/Editor/JetBrains/
+*.sln
+*.csproj
+LanternUnity/Assets/Plugins/Editor/JetBrains.meta
+LanternUnity/Assets/Scenes/
