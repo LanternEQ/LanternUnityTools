@@ -49,7 +49,7 @@ namespace Editor
         /// <summary>
         /// The scaling that is applied to the zone on import
         /// </summary>
-        private static float _scaleFactor = 1.0f;
+        private static float _scaleFactor = 0.5f;
 
         /// <summary>
         /// Should zone objects be imported?
@@ -140,10 +140,8 @@ namespace Editor
 
             FixMaterialImportSettings(_zoneFolderPath, _zoneShortname + "_materials.txt");
             FixMaterialImportSettings(_objectsFolderPath,  _zoneShortname +"_objects_materials.txt");
-            FixMaterialImportSettings(_charactersFolderPath, _zoneShortname + "_characters_materials.txt");
             FixMaterialShaderAssignment(_zoneFolderPath, _zoneShortname + "_materials.txt");
             FixMaterialShaderAssignment(_objectsFolderPath, _zoneShortname +"_objects_materials.txt");
-            FixMaterialShaderAssignment(_charactersFolderPath, _zoneShortname +"_characters_materials.txt");
 
             RotateAndScaleZone();     
 
@@ -531,7 +529,7 @@ namespace Editor
                     (float) Convert.ToDouble(lightValues[6]));
                 light.color = lightColor;
 
-                light.range = (float) Convert.ToDouble(lightValues[3]);
+                light.range = (float) Convert.ToDouble(lightValues[3]) * _scaleFactor;
             }
         }
 
