@@ -1,0 +1,4 @@
+1. Copy the zone folder you have extracted in this folder.
+2. In the top bar, select EQ->Editor->Import Zone or press ALT + Z
+3. Enter the shortname of the zone you copied into this folder.
+4. Click `Import`
