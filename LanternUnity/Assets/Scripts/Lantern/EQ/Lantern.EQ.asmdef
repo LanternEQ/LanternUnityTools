@@ -1,0 +1,16 @@
+{
+    "name": "Lantern.EQ",
+    "rootNamespace": "",
+    "references": [
+        "GUID:d1d6e5262cee07546bdd2e2e867ec461"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

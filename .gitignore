@@ -6,3 +6,7 @@ LanternUnity/Assets/Plugins/Editor/JetBrains/
 *.csproj
 LanternUnity/Assets/Plugins/Editor/JetBrains.meta
 LanternUnity/Assets/Scenes/
+LanternUnity/Assets/Content/
+LanternUnity/Logs/
+LanternUnity/obj/
+LanternUnity/UserSettings/

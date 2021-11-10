@@ -3,7 +3,26 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - ZoneMesh
+  - ObjectMesh
+  - CharacterMesh
+  - SkyMesh
+  - ZoneRoot
+  - UiRoot
+  - ZoneEnvironment
+  - Clickable
+  - NPC
+  - ObjectRoot
+  - LightRoot
+  - DoorRoot
+  - SoundRoot
+  - MusicRoot
+  - PrefabRoot
+  - StaticLight
+  - DynamicLight
+  - EquipmentMesh
+  - ZoneRaycast
   layers:
   - Default
   - TransparentFX
@@ -13,16 +32,16 @@ TagManager:
   - UI
   - 
   - 
-  - PostProcessing
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Player
+  - Sky
+  - Zone
+  - Objects
+  - Door
+  - Invisible
+  - ObjectStaticLit
+  - ObjectDynamicLit
+  - ZoneRaycast
+  - IgnoreTarget
   - 
   - 
   - 
