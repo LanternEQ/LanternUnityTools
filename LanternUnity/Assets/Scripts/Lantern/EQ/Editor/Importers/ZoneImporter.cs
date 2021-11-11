@@ -117,9 +117,10 @@ namespace Lantern.Editor.Importers
 
             DeleteOldAssets(shortname);
 
-            if (!Directory.Exists(PathHelper.GetSystemPathFromUnity(PathHelper.GetRootLoadPath(shortname))))
+            var path = PathHelper.GetSystemPathFromUnity(PathHelper.GetRootLoadPath(shortname));
+            if (!Directory.Exists(PathHelper.GetSystemPathFromUnity(path)))
             {
-                Debug.LogError("ZoneImporter: No asset folder for zone: " + shortname);
+                Debug.LogError($"ZoneImporter: No folder at path: {path}");
                 return;
             }
 
