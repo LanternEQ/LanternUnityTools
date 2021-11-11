@@ -581,17 +581,16 @@ namespace Lantern.Editor.Importers
         private static void CreateModelAnimationLink()
         {
             _animationModelSources = new Dictionary<string, string>();
-
             var pathToModelInfo = Application.streamingAssetsPath + "/animationsources.txt";
-            TextAsset modelInfoText = AssetDatabase.LoadAssetAtPath<TextAsset>(pathToModelInfo);
-
-            if (modelInfoText == null)
+            var textLines = File.ReadAllText(pathToModelInfo);
+            
+            if (textLines.Length == 0)
             {
-                Debug.LogError("CharacterImporter: Could not find animationsources.txt with the pair info");
+                Debug.LogError($"CharacterImporter: Could not find animation sources at path: {pathToModelInfo}");
                 return;
             }
 
-            var parsedLines = TextParser.ParseTextByDelimitedLines(modelInfoText.text, ',');
+            var parsedLines = TextParser.ParseTextByDelimitedLines(textLines, ',');
 
             foreach (var line in parsedLines)
             {

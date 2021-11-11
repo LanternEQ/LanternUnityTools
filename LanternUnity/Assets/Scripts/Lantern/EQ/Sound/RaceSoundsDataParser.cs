@@ -11,9 +11,7 @@ namespace Lantern
         public static List<ModelSound> GetModelSounds()
         {
             var modelSoundsAssetPath = Application.streamingAssetsPath + "/RaceSounds.csv";
-
             var textLines = File.ReadAllLines(modelSoundsAssetPath);
-
             List<ModelSound> modelSounds = new List<ModelSound>();
 
             for (var i = 0; i < textLines.Length; i++)

@@ -31,9 +31,7 @@ namespace Lantern.Helpers
         private static void ParseRaceDataFromFile()
         {
             var modelSoundsAssetPath = Application.streamingAssetsPath + "/RaceData.csv";
-
             var textLines = File.ReadAllText(modelSoundsAssetPath);
-            
             var lines = TextParser.ParseTextByDelimitedLines(textLines, ',');
 
             for (int i = 0; i < lines.Count; ++i)
