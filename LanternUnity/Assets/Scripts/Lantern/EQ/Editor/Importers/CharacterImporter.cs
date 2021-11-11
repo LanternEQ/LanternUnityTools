@@ -582,8 +582,7 @@ namespace Lantern.Editor.Importers
         {
             _animationModelSources = new Dictionary<string, string>();
 
-            // TOOD: Client data path in path helper
-            var pathToModelInfo = "Assets/Content/ClientData/animationsources.txt";
+            var pathToModelInfo = Application.streamingAssetsPath + "/animationsources.txt";
             TextAsset modelInfoText = AssetDatabase.LoadAssetAtPath<TextAsset>(pathToModelInfo);
 
             if (modelInfoText == null)
