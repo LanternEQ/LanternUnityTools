@@ -15,11 +15,11 @@ namespace Lantern.Editor.Importers
         {
             if (zoneName == "characters")
             {
-                return GetRootAssetPath() + "Classic/characters/";
+                return GetRootAssetPath() + "characters/";
             }
             if (zoneName == "equipment" || assetImportType == AssetImportType.Equipment)
             {
-                return GetRootAssetPath() + "Classic/equipment/";
+                return GetRootAssetPath() + "equipment/";
             }
             
             string loadPath = GetRootAssetPath() + zoneName + "/";
@@ -46,7 +46,7 @@ namespace Lantern.Editor.Importers
         {
             if (assetImportType == AssetImportType.Characters)
             {
-                return GetRootAssetPath() + "Characters" + (includeEndSlash ? "/" : "");
+                return "Assets/Content/AssetsToBundle/Characters" + (includeEndSlash ? "/" : "");
             }
             if (assetImportType == AssetImportType.Equipment)
             {
