@@ -1,0 +1,32 @@
+﻿# Lantern Zone List - Kunark
+# Cities
+cabeast
+cabwest
+
+# Outdoors
+burningwood
+dreadlands
+emeraldjungle
+fieldofbone
+firiona
+frontiermtns
+lakeofillomen
+overthere
+skyfire
+swampofnohope
+timorous
+trakanon
+warslikswood
+
+# Dungeons
+chardok
+citymist
+dalnir
+charasis
+kaesora
+karnor
+kurn
+nurga
+sebilis
+droga
+veeshan

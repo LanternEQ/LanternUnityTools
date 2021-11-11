@@ -1,0 +1,57 @@
+﻿# Lantern Zone List - Antonica
+# Outdoors
+arena
+beholder
+ecommons
+eastkarana
+erudsxing
+everfrost
+highpass
+innothule
+kithicor
+lakerathe
+lavastorm
+misty
+nektulos
+nro
+northkarana
+oasis
+oot
+qeytoqrg
+rathemtn
+sro
+southkarana
+feerrott
+commons
+qey2hh1
+
+# Cities
+grobb
+halas
+neriaka
+neriakb
+neriakc
+freporte
+freportn
+freportw
+qeynos
+qeynos2
+oggok
+rivervale
+qrg
+
+# Dungeons
+befallen
+blackburrow
+cazicthule
+runnyeye
+highkeep
+gukbottom
+soldungb
+najena
+permafrost
+qcat
+soldunga
+paw
+soltemple
+guktop

@@ -1,0 +1,23 @@
+﻿# Lantern Zone List - Velious
+# Cities
+thurgadinb
+kael
+skyshrine
+thurgadina
+
+# Outdoors
+cobaltscar
+eastwastes
+greatdivide
+iceclad
+wakening
+westwastes
+
+# Dungeons
+crystal
+necropolis
+sirens
+sleeper
+templeveeshan
+frozenshadow
+velketor
