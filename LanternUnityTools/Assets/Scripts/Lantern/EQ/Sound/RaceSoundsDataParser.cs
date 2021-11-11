@@ -10,7 +10,7 @@ namespace Lantern
     {
         public static List<ModelSound> GetModelSounds()
         {
-            var modelSoundsAssetPath = Application.streamingAssetsPath + "/RaceSounds.csv";
+            var modelSoundsAssetPath = Application.streamingAssetsPath + "/ClientData/RaceSounds.csv";
             var textLines = File.ReadAllLines(modelSoundsAssetPath);
             List<ModelSound> modelSounds = new List<ModelSound>();
 

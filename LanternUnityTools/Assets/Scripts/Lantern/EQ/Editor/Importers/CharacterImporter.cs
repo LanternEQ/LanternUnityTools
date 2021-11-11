@@ -581,7 +581,7 @@ namespace Lantern.Editor.Importers
         private static void CreateModelAnimationLink()
         {
             _animationModelSources = new Dictionary<string, string>();
-            var pathToModelInfo = Application.streamingAssetsPath + "/animationsources.txt";
+            var pathToModelInfo = PathHelper.GetClientDataPath() + "/animationsources.txt";
             var textLines = File.ReadAllText(pathToModelInfo);
             
             if (textLines.Length == 0)

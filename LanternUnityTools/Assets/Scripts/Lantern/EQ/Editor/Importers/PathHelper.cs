@@ -99,6 +99,11 @@ namespace Lantern.Editor.Importers
             return loadPath;
         }
 
+        public static string GetClientDataPath()
+        {
+            return "Assets/Content/ClientData/";
+        }
+
         public static string GetSystemPathFromUnity(string unityPath)
         {
             // Trims the Assets prefix as it's included in the data path as well

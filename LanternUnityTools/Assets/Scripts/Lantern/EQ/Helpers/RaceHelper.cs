@@ -30,7 +30,7 @@ namespace Lantern.Helpers
 
         private static void ParseRaceDataFromFile()
         {
-            var modelSoundsAssetPath = Application.streamingAssetsPath + "/RaceData.csv";
+            var modelSoundsAssetPath = Application.streamingAssetsPath + "/ClientData/RaceData.csv";
             var textLines = File.ReadAllText(modelSoundsAssetPath);
             var lines = TextParser.ParseTextByDelimitedLines(textLines, ',');
 
