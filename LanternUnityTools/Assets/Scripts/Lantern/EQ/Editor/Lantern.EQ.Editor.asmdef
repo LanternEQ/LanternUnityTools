@@ -1,0 +1,19 @@
+{
+    "name": "Lantern.EQ.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:361b2a66dbd61934c9baf3551fb4f50e",
+        "GUID:d1d6e5262cee07546bdd2e2e867ec461"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
