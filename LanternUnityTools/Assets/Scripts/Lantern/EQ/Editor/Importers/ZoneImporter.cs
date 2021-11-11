@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using Lantern.Editor.Helpers;
@@ -118,7 +118,7 @@ namespace Lantern.Editor.Importers
             DeleteOldAssets(shortname);
 
             var path = PathHelper.GetSystemPathFromUnity(PathHelper.GetRootLoadPath(shortname));
-            if (!Directory.Exists(PathHelper.GetSystemPathFromUnity(path)))
+            if (!Directory.Exists(path))
             {
                 Debug.LogError($"ZoneImporter: No folder at path: {path}");
                 return;
