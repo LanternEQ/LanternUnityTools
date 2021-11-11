@@ -92,8 +92,8 @@ namespace Lantern.Editor.Importers
 
             // Find all meshes for this model
             string path = _zoneShortname == "characters"
-                ? "Assets/ZoneAssets/Classic/Characters"
-                : $"Assets/ZoneAssets/Classic/{_zoneShortname}/Characters";
+                ? PathHelper.GetRootAssetPath() + "Characters"
+                : $"{PathHelper.GetRootAssetPath()}/{_zoneShortname}/Characters";
             string[] meshGuidPaths = AssetDatabase.FindAssets(modelAsset,
                 new[] {path});
 
