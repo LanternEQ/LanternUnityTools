@@ -1,0 +1,199 @@
+Id,Name,Male,Female,Neutral,Height,BoundingRadius,Scale Factor,Size
+1,Human,HUM,HUF,,0.625,5.56961,0.2,1
+2,Barbarian,BAM,BAF,,0.625,5.4499,0.2,1
+3,Erudite,ERM,ERF,,0.625,5.08699,0.2,1
+4,Wood Elf,ELM,ELF,,0.625,5.56961,0.2,1
+5,High Elf,HIM,HIF,,0.625,5.08699,0.2,1
+6,Dark Elf,DAM,DAF,,0.625,5.58334,0.2,1
+7,Half Elf,HAM,HAF,,0.625,5.44665,0.2,1
+8,Dwarf,DWM,DWF,,0.625,5.25813,0.2,1
+9,Troll,TRM,TRF,,0.625,7.5179,0.2,1
+10,Ogre,OGM,OGF,,0.625,7.32333,0.2,1
+11,Halfling,HOM,HOF,,0.625,5.12248,0.2,1
+12,Gnome,GNM,GNF,,0.625,4.26706,0.2,1
+13,Aviak,,,AVI,0.625,6.02622,0.2,1
+14,Werewolf,,,WER,0.625,6.20092,0.2,1
+15,Brownie,BRM,BRF,,0.625,5.4499,0.2,1
+16,Centaur,,,CEN,0.625,8.12494,0.2,1
+17,Golem,,,GOL,0.625,5.59691,0.2,1
+18,Giant / Cyclops,,,GIA,0.625,8.11092,0.2,1
+19,Trakanon,,,TRK,0.625,41.5857,0.2,1
+20,Doppleganger,,,VST,0.625,7.69592,0.2,1
+21,Evil Eye,,,BEH,0.625,11.113,0.2,1
+22,Beetle,,,BET,0.625,26.611,0.2,1
+23,Kerra,CPM,CPF,,0.625,6.22859,0.2,1
+24,Fish,,,FIS,0.625,1.25,0.2,1
+25,Fairy,,FAF,,0.625,13.1853,0.2,1
+26,Froglok,,,FRO,0.625,5.34445,0.2,1
+27,Froglok Ghoul,,,FRG,0.625,5.20999,0.2,1
+28,Fungusman,,,FUN,0.625,4.92871,0.2,1
+29,Gargoyle,,,GA,0.625,6.11814,0.2,1
+30,Gasbag,,,BEH,0.625,11.113,0.2,1
+31,Gelatinous Cube,,,CUB,0.625,12.3038,0.2,1
+32,Ghost,,,,0.625,5.56961,0.2,1
+33,Ghoul,,,GHU,0.625,6.25323,0.2,1
+34,Giant Bat,,,BAT,0.625,34.5998,0.2,1
+35,Giant Eel,,,,0,0,0,0
+36,Giant Rat,,,RAT,0.625,5.32326,0.2,1
+37,Giant Snake,,,SNA,0.625,11.9915,0.2,1
+38,Giant Spider,,,SPI,0.625,26.611,0.2,1
+39,Gnoll,,,GNN,0.625,5.84785,0.2,1
+40,Goblin,,,GOB,0.625,6.25323,0.2,1
+41,Gorilla,,,GOR,0.625,9.57382,0.2,1
+42,Wolf,,,WO,0.625,5.35338,0.2,1
+43,Bear,,,BEA,0.625,15.2727,0.2,1
+44,Freeport Guards,FPM,,,0.625,5.4499,0.2,1
+45,Demi Lich,,,DML,0.625,4.32734,0.2,1
+46,Imp,,,IMP,0.625,11.5,0.2,1
+47,Griffin,,,GRI,0.625,8.26987,0.2,1
+48,Kobold,,,KOB,0.625,6.20092,0.2,1
+49,Lava Dragon,,,DRA,20,116.3,1,1
+50,Lion,LIM,LIF,,0.625,5.77437,0.2,1
+51,Lizard Man,,,LIZ,0.625,7.7232,0.2,1
+52,Mimic,,,MIM,0.625,7.95907,0.2,1
+53,Minotaur,,,MIN,0.625,5.84785,0.2,1
+54,Orc,,,ORC,0.625,6.37399,0.2,1
+55,Human Beggar,BGM,,,0.625,5.4499,0.2,1
+56,Pixie,,,PIF,0.625,13.123,0.2,1
+57,Dracnid,DRM,DRF,,0.625,17.0433,0.2,1
+58,Solusek Ro,,,SOL,0.625,5.87495,0.2,1
+59,Bloodgills,,,BGG,0.625,6.72638,0.2,1
+60,Skeleton,,,SKE,0.625,5.4499,0.2,1
+61,Shark,,,SHA,0.625,5.14074,0.2,1
+62,Tunare,,,TUN,0.625,5.08699,0.2,1
+63,Tiger,,,TIG,0.625,5.77437,0.2,1
+64,Treant,,,TRE,0.625,8.66169,0.2,1
+65,Vampire,DVM,,,0.625,5.56961,0.2,1
+66,Rallos Zek,,,RAL,0.625,5.63879,0.2,1
+67,Highpass Citizen,HHM,,,0.625,5.4499,0.2,1
+68,Tentacle,,,TEN,0.625,12.4755,0.2,1
+69,Will O Wisp,,,WIL,0.625,20,0.2,1
+70,Zombie,ZOM,ZOF,,0.625,5.4499,0.2,1
+71,Qeynos Citizen,QCM,QCF,,0.625,5.4499,0.2,1
+72,Ship,,,SHIP,0.1,146.11,2,1
+73,Launch,,,LAUNCH,0.1,73.5643,1,1
+74,Piranha,,,PIR,0.625,8.7411,0.2,1
+75,Elemental,,,ELE,0.625,5.65334,0.2,1
+76,Puma,,,PUM,0.625,5.77437,0.2,1
+77,Neriak Citizen,NGM,NGF,,0.625,5.4499,0.2,1
+78,Erudite Citizen,EGM,EGF,,0.625,5.4499,0.2,1
+79,Bixie,,,BIX,0.625,21.6025,0.2,1
+80,Reanimated Hand,,,REA,0.625,23.2324,0.2,1
+81,Rivervale Citizen,RIM,RIF,,0.625,4.9861,0.2,1
+82,Scarecrow,,,SCA,0.625,5.4499,0.2,1
+83,Skunk,,,SKU,0.625,5.32326,0.2,1
+84,Snake Elemental,,,,0,0,0,0
+85,Spectre,,,SPE,0.625,12.1,0.2,1
+86,Sphinx,,,SPH,0.625,16.6252,0.2,1
+87,Armadillo,,,ARM,0.625,5.32326,0.2,1
+88,Clockwork Gnome,CLM,CLF,CL,0.625,9.85743,0.2,1
+89,Drake,,,DRK,0.625,16.6252,0.2,1
+90,Halas Citizen,HLM,HLF,,0.625,5.08699,0.2,1
+91,Alligator,,,ALL,0.625,6.3519,0.2,1
+92,Grobb Citizen,GRM,GRF,,0.625,7.49774,0.2,1
+93,Oggok Citizen,OKM,OKF,,0.625,7.32436,0.2,1
+94,Kaladim Citizen,KAM,KAF,,0.625,5.25813,0.2,1
+95,Cazic Thule,,,CAZ,0.625,14.3283,0.2,1
+96,Cockatrice,,,COC,0.625,6.73233,0.2,1
+97,Daisy Man,,,,0,0,0,0
+98,Elf Vampire,VSM,VFS,VS,0.625,5.08699,0.2,1
+99,Denizen,,,DEN,0.625,5.01259,0.2,1
+100,Dervish,,,DER,0.625,8.04356,0.2,1
+101,Efreeti,,,EFR,0.625,5.7033,0.2,1
+102,Froglok Tadpole,,,FRT,0.625,6.04281,0.2,1
+103,Kedge,,,KED,0.625,5.84754,0.2,1
+104,Leech,,,LEE,0.625,10.733,0.2,1
+105,Swordfish,,,SWO,0.625,3.87731,0.2,1
+106,Felguard,,,FE,0.625,5.58334,0.2,1
+107,Mammoth,,,MAM,0.625,13.9833,0.2,1
+108,Eye of Zomm,,,EYE,3,30,0.05,1
+109,Wasp,,,WAS,0.625,12.1309,0.2,1
+110,Mermaid,,,MER,0.625,5.77456,0.2,1
+111,Harpie,,,HAR,0.625,23.996,0.2,1
+112,Fayguard,GFM,GFF,,0.625,5.08699,0.2,1
+113,Drixie,,,DRI,0.625,40,0.2,1
+114,Ghost Ship,,,GSP,0,0,0,0
+115,Clam,,,CLA,0,0,0,0
+116,Sea Horse,,,SEA,0.625,3.92558,0.2,1
+117,Ghost Dwarf,,,GD,0.625,5.25813,0.2,1
+118,Erudite Ghost,,,GE,0.625,5.4499,0.2,1
+119,Sabertooth Cat,,,STC,0.625,5.77437,0.2,1
+120,Wolf Elemental,,,WOE,0.625,5.35338,0.2,1
+121,Gorgon,,,GRG,0.625,11.998,0.2,1
+122,Dragon Skeleton,,,DRU,0.625,92.5177,0.2,1
+123,Innoruuk,,,INN,0.625,6.46365,0.2,1
+124,Unicorn,,,UNI,0.625,10.3332,0.2,1
+125,Pegasus,,,PEG,0.625,30.9997,0.2,1
+126,Djinn,,,DJI,0.625,6.5729,0.2,1
+127,Invisible Man,,,IV,0.625,5.81229,0.2,1
+128,Iksar,,,IK,0.625,6.13797,0.2,1
+129,Scorpion,,,SCR,0.625,16.9904,0.2,1
+130,Vah Shir,,,KE,0.625,5.08699,0.2,1
+131,Sarnak,,,SRW,0.625,8.4548,0.2,1
+132,Draglock,,,DLK,0,0,0,0
+133,Lycanthrope,,,LYC,0.625,6.99652,0.2,1
+134,Mosquito,,,MOS,0.625,25.2714,0.2,1
+135,Rhino,,,RHI,0.625,10.9196,0.2,1
+136,Xalgoz,,,XAL,0.625,5.51484,0.2,1
+137,Kunark Goblin,,,KGO,0.625,6.72638,0.2,1
+138,Yeti,,,YET,0.625,9.57382,0.2,1
+139,Iksar Citizen,,,IC,0.625,6.12162,0.2,1
+140,Forest Giant,,,FGI,0.625,6.03214,0.2,1
+141,Boat,,,BOAT,0,0,0,0
+142,Minor Illusion,,,,0,0,0,0
+143,Tree Illusion,,,,0,0,0,0
+144,Burynai,,,BRN,0.625,8.60096,0.2,1
+145,Goo,,,GOO,0.625,11.4773,0.2,1
+146,Spectral Sarnak,,,SSN,0.625,8.4548,0.2,1
+147,Spectral Iksar,,,SI,0.625,6.12162,0.2,1
+148,Kunark Fish,,,BAC,0.625,2.70244,0.2,1
+149,Iksar Scorpion,,,ISC,0.625,16.9904,0.2,1
+150,Erollisi,,,ERO,0.625,5.08699,0.2,1
+151,Tribunal,,,TRI,0.625,5.4499,0.2,1
+152,Bertoxxulous,,,BER,0,0,0,0
+153,Bristlebane,,,BRI,0.625,5.12248,0.2,1
+154,Fay Drake,,,FDR,0.625,8.83696,0.2,1
+155,Sarnak Skeleton,,,SSK,0.625,8.4548,0.2,1
+156,Ratman,,,VR,0.625,5.50859,0.2,1
+157,Wyvern,,,WYV,0.625,11.2382,0.2,1
+158,Wurm,,,WUR,20,116.215,1,1
+159,Devourer,,,DEV,0.625,7.63953,0.2,1
+160,Iksar Golem,,,IKG,0.625,11.4802,0.2,1
+161,Iksar Skeleton,,,IKS,0.625,6.13797,0.2,1
+162,Man Eating Plant,,,MEP,0.625,7.35427,0.2,1
+163,Raptor,,,RAP,0.625,6.19878,0.2,1
+164,Sarnak Golem,,,SGO,0.625,16.906,0.2,1
+165,Water Dragon,,,SED,0.625,13.3849,0.2,1
+166,Iksar Hand,,,IKH,0.625,23.2324,0.2,1
+167,Succulent,,,SUC,0.625,9.8918,0.2,1
+168,Flying Monkey,,,FMO,0.625,8.3126,0.2,1
+169,Brontotherium,,,BTM,0.625,10.9196,0.2,1
+170,Snow Dervish,,,SDE,0.625,4.32734,0.2,1
+171,Dire Wolf,,,DIW,0.625,7.41669,0.2,1
+172,Manticore,,,MTC,0.625,8.28517,0.2,1
+173,Totem,,,TOT,0.625,5.56961,0.2,1
+174,Cold Spectre,,,SPC,0.625,18.096,0.2,1
+175,Enchanted Armor,,,ENA,0.625,5.56961,0.2,1
+176,Snow Bunny,,,SBU,0.625,4.51122,0.2,1
+177,Walrus,,,WA,0.625,12.9319,0.2,1
+178,Rock-gem Men,,,RGM,0.625,5.5422,0.2,1
+179,,,,,0,0,0,0
+180,,,,,0,0,0,0
+181,Yak Man,,,YAK,0.625,5.84785,0.2,1
+182,Faun,,,FAN,0,0,0,0
+183,Coldain,,,CO,0.625,3,0.2,1
+184,Velious Dragons,,,DR2,0.625,41.5857,0.2,1
+185,Hag,,,HAG,0.625,5.08699,0.2,1
+186,Hippogriff,,,HIP,0,0,0,0
+187,Siren,,,SIR,0.625,5.08699,0.2,1
+188,Frost Giant,,,FSG,0.625,15.2608,0.2,1
+189,Storm Giant,,,ST,0.625,15.2264,0.2,1
+190,Ottermen,,,OTM,0.625,12.4591,0.2,1
+191,Walrus Man,,,WLM,0.625,12.5826,0.2,1
+192,Clockwork Dragon,,,CCD,0,0,0,0
+193,Abhorent,,,ABH,0.625,5.08699,0.2,1
+194,Sea Turtle,,,STU,0.625,15.2025,0.2,1
+195,Black and White Dragons,,,BWD,0.625,41.5857,0.2,1
+196,Ghost Dragon,,,GDR,20,116.215,1,1
+197,Ronnie Test,,,RON,0,0,0,0
+198,Prismatic Dragon,,,PRI,0.625,41.5857,0.2,1
