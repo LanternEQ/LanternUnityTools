@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -15,6 +16,13 @@ namespace Lantern.Editor.Importers
             if (!EditorUtility.DisplayDialog("Import Equipment",
                 "Are you sure you want to import equipment?", "Yes", "No"))
             {
+                return;
+            }
+
+            var path = PathHelper.GetRootLoadPath("equipment");
+            if (!Directory.Exists(PathHelper.GetSystemPathFromUnity(path)))
+            {
+                Debug.LogError($"EquipmentImporter: No folder at path: {path}");
                 return;
             }
             
