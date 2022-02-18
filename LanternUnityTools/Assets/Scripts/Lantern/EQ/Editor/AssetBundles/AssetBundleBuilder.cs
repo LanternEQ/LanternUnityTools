@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.IO;
+using System.Collections;
 using Lantern.Editor.Importers;
 using Lantern.Global.AssetBundles;
 using Lantern.Services;
@@ -196,10 +197,17 @@ namespace Infrastructure.Editor
         private static BuildPlayerOptions GetBuildOptions(BuildTarget target, bool isDebug = false)
         {
             string folderName = GetPlatformFolderName(target);
+            var scenes = new ArrayList();
+
+            string zoneRootViewer = "Assets/Scenes/ZoneViewerRoot.unity";
+
+            if (File.Exists(zoneRootViewer)) {
+                scenes.Add(zoneRootViewer);
+            }
 
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
             {
-                scenes = new[] {"Assets/Scenes/ZoneViewerRoot.unity"},
+                scenes = (String[]) scenes.ToArray( typeof( string ) ),
                 locationPathName = $"Builds/{folderName}/LZV/LZV",
                 target = target,
                 options = isDebug ? BuildOptions.Development : BuildOptions.None
