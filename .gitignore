@@ -9,3 +9,4 @@ LanternUnityTools/obj/
 LanternUnityTools/UserSettings/
 *.sln
 *.csproj
+.idea/
