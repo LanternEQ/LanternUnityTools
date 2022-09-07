@@ -1,1 +1,0 @@
-Drop the exported folder from the LanternExtractor here. You MUST export in intermediate asset mode.
