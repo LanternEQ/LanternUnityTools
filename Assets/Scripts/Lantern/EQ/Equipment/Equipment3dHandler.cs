@@ -1,133 +1,79 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using Lantern.EQ.Animation;
-using Lantern.Helpers;
+using Lantern.EQ.Helpers;
+using Lantern.EQ.Lighting;
 using UnityEngine;
 
-namespace Lantern.EQ
+namespace Lantern.EQ.Equipment
 {
+    /// <summary>
+    /// Handles equipping and management of 3d items on a character model
+    /// </summary>
     public class Equipment3dHandler : MonoBehaviour
     {
-        private bool _isPlayer;
-        private SunlightSetterDynamic _dynamicLightSetter;
-
+        private AmbientLightSetterDynamic _dynamicLightSetter;
 
         private int _instanceId;
-        [SerializeField] 
+
+        [SerializeField]
         private SkeletonAttachPoints _attachPoints;
 
-        private Dictionary<SkeletonPoints, GameObject> _spawnedEquipment;
+        private Dictionary<Equipment3dSlot, EquipmentModel> _spawnedEquipment;
+        private int _renderLayer;
+        private Action<Renderer> _updateModelCallback;
 
         private void Awake()
         {
-            _dynamicLightSetter = GetComponent<SunlightSetterDynamic>();
+            _dynamicLightSetter = GetComponent<AmbientLightSetterDynamic>();
         }
 
         public void Initialize(bool isPlayer, int instanceId)
         {
-            _isPlayer = isPlayer;
             _instanceId = instanceId;
-            
+
             if (_attachPoints == null)
             {
                 _attachPoints = GetComponent<SkeletonAttachPoints>();
             }
 
-            _dynamicLightSetter = GetComponent<SunlightSetterDynamic>();
-
-            _spawnedEquipment = new Dictionary<SkeletonPoints, GameObject>();
-
-            if (isPlayer)
-            {
-                //_inventoryService = ServiceFactory.Get<InventoryService>();
-                
-                if (_dynamicLightSetter != null)
-                {
-                    _dynamicLightSetter.SetIsPlayer();
-                }
-            }
+            _dynamicLightSetter = GetComponent<AmbientLightSetterDynamic>();
+            _spawnedEquipment = new Dictionary<Equipment3dSlot, EquipmentModel>();
         }
-        
+
         public void OnDestroy()
         {
-            RemoveItemIfExists(SkeletonPoints.Head);
-            RemoveItemIfExists(SkeletonPoints.Shield);
-            RemoveItemIfExists(SkeletonPoints.HandLeft);
-            RemoveItemIfExists(SkeletonPoints.HandRight);
+            foreach (Equipment3dSlot slot in Enum.GetValues(typeof(Equipment3dSlot)))
+            {
+                RemoveItemIfExists(slot);
+            }
         }
 
         public void EquipmentDebug(GameObject item)
         {
-            SpawnItemInSlot(SkeletonPoints.HandRight, item);
+            SpawnItemInSlot(Equipment3dSlot.MainHand, item);
         }
 
         public void SetSkeletonAttachPoints(SkeletonAttachPoints sap)
         {
             _attachPoints = sap;
         }
-        
-        private static Dictionary<Equipment3dSlot, SkeletonPoints> _slotMapping = new Dictionary<Equipment3dSlot, SkeletonPoints>
-        {
-            {Equipment3dSlot.MainHand, SkeletonPoints.HandRight},
-            {Equipment3dSlot.Shield, SkeletonPoints.Shield},
-            {Equipment3dSlot.OffHand, SkeletonPoints.HandLeft},
-        };
 
-        public void OnSlotItemChanged(GameObject item, Equipment3dSlot attachPoint)
-        {
-            var skelepoint = _slotMapping[attachPoint];
-            
-            if (skelepoint == SkeletonPoints.None)
-            {
-                return;
-            }
-            
-            // Head is considered a valid visible equip slot and for some reason, the model is a bag.
-            // If we see that a bag is the equip graphic, we ignore it.
-            //if (item?.idfile == "IT63")
-            //{
-            //    return;
-           // }
-
-            if (item == null)
-            {
-                RemoveItemIfExists(skelepoint);
-
-                if (skelepoint == SkeletonPoints.HandLeft)
-                {
-                    RemoveItemIfExists(SkeletonPoints.Shield);
-                }
-            }
-            else
-            {
-                if (skelepoint == SkeletonPoints.HandLeft)
-                {
-                    RemoveItemIfExists(SkeletonPoints.Shield);
-                }
-                
-                if (skelepoint == SkeletonPoints.Shield)
-                {
-                    RemoveItemIfExists(SkeletonPoints.HandLeft);
-                }
-                
-                SpawnItemInSlot(skelepoint, item);
-            }
-        }
-
-        public void SpawnItemInSlot(SkeletonPoints point, GameObject item)
+        public void SpawnItemInSlot(Equipment3dSlot point, GameObject item)
         {
             if (_spawnedEquipment == null)
             {
-                _spawnedEquipment = new Dictionary<SkeletonPoints, GameObject>();
+                _spawnedEquipment = new Dictionary<Equipment3dSlot, EquipmentModel>();
             }
-            
+
             if (_spawnedEquipment.ContainsKey(point))
             {
                 Debug.LogWarning("ITEM ALREADY IN attach point: " + point);
                 RemoveItemIfExists(point);
             }
 
-            var attachPoint = _attachPoints.GetAttachPoint(point);
+            var attachPoint = _attachPoints.GetAttachPoint(EquipmentHelper.GetSkeletonAttachPoint(point));
 
             if (attachPoint == null)
             {
@@ -136,86 +82,159 @@ namespace Lantern.EQ
             }
 
             var instantiated = Instantiate(item, attachPoint);
-            instantiated.layer = _dynamicLightSetter.gameObject.layer;
-            GameObjectHelper.RemoveCloneAppend(instantiated);
+            instantiated.layer = _renderLayer;
+            GameObjectHelper.CleanName(instantiated);
 
-            // TODO: Put into helper class
-            byte[] bytes = System.BitConverter.GetBytes(_instanceId);
-            Color32 targetColor = new Color32(bytes[0], bytes[1], bytes[2], bytes[3]);
+            if (point == Equipment3dSlot.Ranged)
+            {
+                DisableItemIfExists(Equipment3dSlot.MainHand);
+                DisableItemIfExists(Equipment3dSlot.OffHand);
+                DisableItemIfExists(Equipment3dSlot.Shield);
+            }
+            else if (point == Equipment3dSlot.MainHand || point == Equipment3dSlot.OffHand || point == Equipment3dSlot.Shield)
+            {
+                DisableItemIfExists(Equipment3dSlot.Ranged);
+            }
 
-            MeshRenderer mr = instantiated.GetComponent<MeshRenderer>();
-
-            var materials = mr.sharedMaterials;
-
-            var childSetter = instantiated.AddComponent<SunlightSetterChild>();
+            var childSetter = instantiated.AddComponent<AmbientLightSetterChild>();
             if (_dynamicLightSetter != null)
             {
-                _dynamicLightSetter.AddSunlightChild(childSetter);
+                _dynamicLightSetter.AddChild(childSetter);
             }
-            
-            var pb = new MaterialPropertyBlock();
 
-            // Setting 
-            /*for (int i = 0; i < materials.Length; i++)
+            if (instantiated.TryGetComponent<EquipmentModel>(out var equipmentModel))
             {
-                mr.GetPropertyBlock(pb, i);
-                pb.SetColor("_TargetColor", targetColor);
-                mr.SetPropertyBlock(pb, i);
-            }*/
-            
-            _spawnedEquipment[point] = instantiated;
+                _spawnedEquipment[point] = equipmentModel;
+
+                foreach (var rend in equipmentModel.Renderers)
+                {
+                    _updateModelCallback?.Invoke(rend);
+                }
+            }
+
+            UpdateLayerValues();
         }
 
-        public void SpawnNpcEquipment(GameObject item1, GameObject item2, SkeletonPoints item1Slot, SkeletonPoints item2Slot)
+        public void SpawnNpcEquipment(GameObject item1, GameObject item2, Equipment3dSlot item1Slot, Equipment3dSlot item2Slot)
         {
             if (item1 != null)
             {
                 SpawnItemInSlot(item1Slot, item1);
             }
-            
+
             if (item2)
             {
                 SpawnItemInSlot(item2Slot, item2);
             }
         }
 
-        public SkeletonPoints RemoveItemIfEquipped(string item)
+        public Equipment3dSlot RemoveItemIfEquipped(string item)
         {
             if (_spawnedEquipment != null)
             {
+                item = item.ToLower();
                 var entries = _spawnedEquipment.ToArray();
                 foreach (var entry in entries)
                 {
-                    if (entry.Value.name == item)
+                    if (entry.Value.name == item && RemoveItemIfExists(entry.Key))
                     {
-                        if (RemoveItemIfExists(entry.Key))
-                            return entry.Key;
+                        return entry.Key;
                     }
                 }
             }
 
-            return SkeletonPoints.None;
+            return Equipment3dSlot.Helm;
         }
 
-        private bool RemoveItemIfExists(SkeletonPoints point)
+        public bool RemoveItemIfExists(Equipment3dSlot point)
         {
             if (_spawnedEquipment == null || !_spawnedEquipment.ContainsKey(point))
             {
                 return false;
             }
-            
+
             var spawnedEquipment = _spawnedEquipment[point];
-            var childSetter = spawnedEquipment.GetComponent<SunlightSetterChild>();
+            var childSetter = spawnedEquipment.GetComponent<AmbientLightSetterChild>();
 
             if (childSetter != null && _dynamicLightSetter != null)
             {
                 _dynamicLightSetter.RemoveSunlightChild(childSetter);
             }
 
-            Destroy(spawnedEquipment);
+            Destroy(spawnedEquipment.gameObject);
             _spawnedEquipment.Remove(point);
 
+            UpdateItemVisibility();
+
             return true;
+        }
+
+        private void UpdateItemVisibility()
+        {
+            if (DoesItemExist(Equipment3dSlot.MainHand) || DoesItemExist(Equipment3dSlot.OffHand) || DoesItemExist(Equipment3dSlot.Shield))
+            {
+                EnableItemIfExists(Equipment3dSlot.MainHand);
+                EnableItemIfExists(Equipment3dSlot.OffHand);
+                EnableItemIfExists(Equipment3dSlot.Shield);
+                DisableItemIfExists(Equipment3dSlot.Ranged);
+            }
+            else
+            {
+                EnableItemIfExists(Equipment3dSlot.Ranged);
+            }
+        }
+
+        public bool EnableItemIfExists(Equipment3dSlot slot)
+        {
+            if (_spawnedEquipment == null || !_spawnedEquipment.ContainsKey(slot))
+            {
+                return false;
+            }
+
+            _spawnedEquipment[slot].gameObject.SetActive(true);
+
+            return true;
+        }
+
+        public bool DisableItemIfExists(Equipment3dSlot slot)
+        {
+            if (_spawnedEquipment == null || !_spawnedEquipment.ContainsKey(slot))
+            {
+                return false;
+            }
+
+            _spawnedEquipment[slot].gameObject.SetActive(false);
+
+            return true;
+        }
+
+        public bool DoesItemExist(Equipment3dSlot slot)
+        {
+            return _spawnedEquipment.ContainsKey(slot);
+        }
+
+        public void SetLayer(int layer)
+        {
+            _renderLayer = layer;
+            UpdateLayerValues();
+        }
+
+        private void UpdateLayerValues()
+        {
+            if (_spawnedEquipment == null)
+            {
+                return;
+            }
+
+            foreach (var e in _spawnedEquipment.Values)
+            {
+                e.SetLayer(_renderLayer);
+            }
+        }
+
+        public void SetModelUpdateCallback(Action<Renderer> onNewActiveModel)
+        {
+            _updateModelCallback = onNewActiveModel;
         }
     }
 }

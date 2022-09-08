@@ -1,4 +1,4 @@
-﻿namespace Lantern.EQ.Animation
+﻿    namespace Lantern.EQ.Animation
 {
     public enum SkeletonPoints
     {

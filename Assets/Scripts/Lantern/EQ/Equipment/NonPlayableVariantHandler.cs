@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Lantern.EQ
+namespace Lantern.EQ.Equipment
 {
     /// <summary>
     /// Manages characters and their variants.
@@ -13,13 +13,14 @@ namespace Lantern.EQ
         List<AdditionalMaterials> _alternateSkins = new List<AdditionalMaterials>();
 
         private Dictionary<string, List<Material>> _additionalMaterials;
-        
+
         protected override void Awake()
         {
             base.Awake();
+            // TODO: This can be done on import
             CreateAlternateMaterials();
         }
-        
+
         private void CreateAlternateMaterials()
         {
             _additionalMaterials = new Dictionary<string, List<Material>>();
@@ -33,7 +34,7 @@ namespace Lantern.EQ
                     {
                         continue;
                     }
-                    
+
                     string materialName = material.name.Split('_')[1];
                     ParseCharacterSkin(materialName, out character, out skinId, out partName);
 
@@ -41,7 +42,7 @@ namespace Lantern.EQ
                     {
                         _additionalMaterials[partName] = new List<Material>();
                     }
-                    
+
                     _additionalMaterials[partName].Add(material);
                 }
             }
@@ -52,10 +53,11 @@ namespace Lantern.EQ
             HandleMainMeshes(helmTexture);
             SetActiveMeshFromGroup(_secondaryMeshes, helmTexture);
             SetMeshMaterials(texture);
-            
-            if (CharacterSounds != null)
+            FixColdainKing();
+
+            if (CharacterSoundsBase != null)
             {
-                CharacterSounds.SetCurrentVariant(texture);
+                CharacterSoundsBase.SetCurrentVariant(texture);
             }
         }
 
@@ -65,13 +67,24 @@ namespace Lantern.EQ
             SetMeshMaterialsInGroup(_secondaryMeshes, index);
         }
 
+        private void FixColdainKing()
+        {
+            foreach (var mesh in _secondaryMeshes)
+            {
+                if(mesh.name == "cokhe01")
+                {
+                    mesh.SetActive(true);
+                }
+            }
+        }
+
         private void SetMeshMaterialsInGroup(List<GameObject> meshes, int textureId)
         {
             if (_alternateSkins.Count == 0)
             {
                 return;
             }
-            
+
             foreach (var mesh in meshes)
             {
                 if (!mesh.activeSelf)
@@ -87,22 +100,21 @@ namespace Lantern.EQ
                 {
                     continue;
                 }
-                
+
                 foreach (var index in indices)
                 {
                     if (index >= _alternateSkins[textureId].materials.Length)
                     {
-                        Debug.LogError("Issue here");
                         continue;
                     }
-                    
+
                     materials.Add(_alternateSkins[textureId].materials[index]);
                 }
-                
+
                 mesh.GetComponent<SkinnedMeshRenderer>().materials = materials.ToArray();
             }
         }
-        
+
         public void SetAdditionalMaterials(List<Material[]> materials)
         {
             foreach(Material[] material in materials)
@@ -111,7 +123,7 @@ namespace Lantern.EQ
                 {
                     materials = material
                 };
-                
+
                 _alternateSkins.Add(am);
             }
         }

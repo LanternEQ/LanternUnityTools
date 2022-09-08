@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Lantern.Editor.Helpers;
+using Infrastructure.EQ.TextParser;
 using Lantern.EQ.Animation;
+using Lantern.EQ.Editor.Helpers;
+using Lantern.EQ.Helpers;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,7 +14,7 @@ namespace Lantern.Editor.Importers
     public static class MaterialImporter
     {
         public static void CreateMaterials(string shortname, AssetImportType importType,
-            TextureAnimation materialSetter, List<AnimatedMaterial> animatedMaterials = null)
+            MaterialAnimation materialSetter, List<MaterialAnimationData> animatedMaterials = null)
         {
             string rootPath = PathHelper.GetSystemPathFromUnity(PathHelper.GetSavePath(shortname, importType));
 
@@ -26,7 +28,7 @@ namespace Lantern.Editor.Importers
 
             if (importType == AssetImportType.Sky)
             {
-                materialsPath = "Assets/ZoneAssets/Classic/sky/sky_materials_sky.txt";
+                materialsPath = Path.Combine(PathHelper.GetEqAssetPath(), "sky/sky_materials_sky.txt");
             }
             else
             {
@@ -97,11 +99,11 @@ namespace Lantern.Editor.Importers
                         {
                             Delay = delay,
                             Material = newMaterial,
-                            
+
                         }newMaterial, textures, delay);
                     }*/
 
-                    animatedMaterials?.Add(new AnimatedMaterial
+                    animatedMaterials?.Add(new MaterialAnimationData
                     {
                         Material = newMaterial,
                         Delay = delay,
@@ -118,7 +120,7 @@ namespace Lantern.Editor.Importers
         }
 
         public static List<Material[]> LoadAllMaterialsForList(string zoneName, string assetMaterialPath,
-            string savePath, AssetImportType importType, List<AnimatedMaterial> textureAnimations = null)
+            string savePath, AssetImportType importType, List<MaterialAnimationData> textureAnimations = null)
         {
             if (!ImportHelper.LoadTextAsset(assetMaterialPath, out var zoneMaterialsAsset))
             {
@@ -176,7 +178,7 @@ namespace Lantern.Editor.Importers
                         if (material != null && textureNames.Count > 1 && textureAnimations != null || materialName == "tau_fire1")
                         {
                             int delay = Convert.ToInt32(line[2]);
-                            
+
                             // Fix for fire bug
                             if (materialName == "tau_fire1" && textureNames.Count != 4)
                             {
@@ -187,8 +189,8 @@ namespace Lantern.Editor.Importers
                                 textureNames.Add("fire4");
                                 delay = 100;
                             }
-                            
-                            var am = new AnimatedMaterial
+
+                            var am = new MaterialAnimationData
                             {
                                 Material = material,
                                 Delay = delay,
@@ -200,7 +202,7 @@ namespace Lantern.Editor.Importers
                             {
                                 am.Textures.Add(TextureHelper.GetTexture(zoneName, importType, texture, false));
                             }
-                            
+
                             textureAnimations.Add(am);
                         }
                     }
@@ -243,7 +245,7 @@ namespace Lantern.Editor.Importers
             {
                 return null;
             }
-            
+
             if (!string.IsNullOrEmpty(mainTextureName))
             {
                 // Find the main texture
@@ -257,7 +259,7 @@ namespace Lantern.Editor.Importers
                 }
 
                 newMaterial.SetTexture("_BaseMap", mainTexture);
-                
+
                 // Even though URP/our shaders don't use _MainTex, it needs to be serialized
                 // Without this, the FBX exports won't have textures
                 newMaterial.SetTexture("_MainTex", mainTexture);

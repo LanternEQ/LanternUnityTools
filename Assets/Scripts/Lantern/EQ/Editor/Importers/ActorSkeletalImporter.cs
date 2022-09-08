@@ -1,4 +1,6 @@
 ﻿using System;
+using Infrastructure.EQ.TextParser;
+using Lantern.EQ.Editor.Helpers;
 using UnityEditor;
 using UnityEngine;
 

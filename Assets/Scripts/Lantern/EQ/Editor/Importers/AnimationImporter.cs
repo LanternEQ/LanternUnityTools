@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Lantern.Helpers;
+using Infrastructure.EQ.TextParser;
+using Lantern.EQ.Animation;
+using Lantern.EQ.Editor.Helpers;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,12 +14,11 @@ namespace Lantern.Editor.Importers
         public static AnimationClip CreateDefaultAnimations(string modelName, string path, AssetImportType importType,
             string shortname, bool isCharacterAnimation)
         {
-            var pathToAnimationText = path;
-
-            TextAsset animationAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(pathToAnimationText);
+            var animationAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(path);
 
             if (animationAsset == null)
             {
+                Debug.LogError($"Cannot create default animation from path: {path}");
                 return null;
             }
 
@@ -32,8 +33,9 @@ namespace Lantern.Editor.Importers
 
             return newClip;
         }
-        
-        public static AnimationClip ImportAnimation(TextAsset textAsset, string modelType, string animationName, bool isCharacterAnimation)
+
+        private static AnimationClip ImportAnimation(TextAsset textAsset, string modelType, string animationName,
+            bool isCharacterAnimation, bool isReversed = false)
         {
             if (textAsset == null)
             {
@@ -44,18 +46,18 @@ namespace Lantern.Editor.Importers
 
             AnimationClip clip = new AnimationClip();
 
-            if(animationName != "pos")
+            if (animationName != "pos")
             {
                 AnimationEvent animationStartedEvent = new AnimationEvent
                 {
                     functionName = "AnimationPlayed",
-                    time =  0f,
+                    time = 0f,
                     stringParameter = animationName.Split('_')[0]
                 };
-                
-                AnimationUtility.SetAnimationEvents(clip, new []{animationStartedEvent});
+
+                AnimationUtility.SetAnimationEvents(clip, new[] { animationStartedEvent });
             }
-            
+
             AnimationCurve posXCurve = new AnimationCurve();
             AnimationCurve posYCurve = new AnimationCurve();
             AnimationCurve posZCurve = new AnimationCurve();
@@ -64,7 +66,7 @@ namespace Lantern.Editor.Importers
             AnimationCurve rotZCurve = new AnimationCurve();
             AnimationCurve rotWCurve = new AnimationCurve();
             AnimationCurve scaleCurve = new AnimationCurve();
-            
+
             int frameCount = Convert.ToInt32(parsedLines[0][1]);
             parsedLines.RemoveAt(0);
 
@@ -76,7 +78,7 @@ namespace Lantern.Editor.Importers
             int totalTimeMs = Convert.ToInt32(parsedLines[0][1]);
             float totalTime = totalTimeMs == 0 ? 1.0f : totalTimeMs / 1000f;
             parsedLines.RemoveAt(0);
-            
+
             string currentBoneRaw = string.Empty;
             foreach (var line in parsedLines)
             {
@@ -94,7 +96,7 @@ namespace Lantern.Editor.Importers
                         clip.SetCurve(currentBoneRaw, typeof(Transform), "localScale.x", scaleCurve);
                         clip.SetCurve(currentBoneRaw, typeof(Transform), "localScale.y", scaleCurve);
                         clip.SetCurve(currentBoneRaw, typeof(Transform), "localScale.z", scaleCurve);
-                        
+
                         posXCurve.keys = null;
                         posYCurve.keys = null;
                         posZCurve.keys = null;
@@ -104,7 +106,7 @@ namespace Lantern.Editor.Importers
                         rotWCurve.keys = null;
                         scaleCurve.keys = null;
                     }
-                    
+
                     currentBoneRaw = line[0];
                 }
 
@@ -117,14 +119,20 @@ namespace Lantern.Editor.Importers
                 float zRot = Convert.ToSingle(line[7]);
                 float wRot = Convert.ToSingle(line[8]);
                 float scale = Convert.ToSingle(line[9]);
-
                 int frameMs = Convert.ToInt32(line[10]);
+
+                // This reverses the frame order for the animation
+                // We leave the root bone (only ever one frame) untouched
+                if (isReversed && currentBoneRaw != "root")
+                {
+                    frameNumber = (frameCount - 1) - frameNumber;
+                }
 
                 if (isCharacterAnimation)
                 {
                     frameMs = totalTimeMs / frameCount;
                 }
-                
+
                 float frameTime = frameMs == 0 ? 0.0f : frameMs * frameNumber / 1000f;
 
                 posXCurve.AddKey(frameTime, xPos);
@@ -150,7 +158,7 @@ namespace Lantern.Editor.Importers
                     scaleCurve.AddKey(frameTime, scale);
                 }
             }
-        
+
             clip.SetCurve(currentBoneRaw, typeof(Transform), "localPosition.x", posXCurve);
             clip.SetCurve(currentBoneRaw, typeof(Transform), "localPosition.y", posYCurve);
             clip.SetCurve(currentBoneRaw, typeof(Transform), "localPosition.z", posZCurve);
@@ -164,9 +172,9 @@ namespace Lantern.Editor.Importers
 
             // Clip needs to be marked as legacy to be used without an animator
             clip.legacy = true;
-            
-            clip.name = modelType + "_" + animationName;
-            
+
+            clip.name = modelType + "_" + animationName + (isReversed ? "R" : "");
+
             if (AnimationHelper.IsLoopingAnimation(animationName))
             {
                 clip.wrapMode = WrapMode.Loop;
@@ -180,6 +188,76 @@ namespace Lantern.Editor.Importers
             clip.EnsureQuaternionContinuity();
 
             return clip;
+        }
+
+        public static AnimationClip GetAnimationClip(string shortname, string fileName, string path, string modelBase,
+            AssetImportType type, ref Dictionary<string, AnimationClip> cache, bool isReversed = false)
+        {
+            string originalName = fileName;
+
+            if (isReversed)
+            {
+                fileName += "R";
+            }
+
+            // First, check to see if the animation exists in memory
+            if (cache.TryGetValue(fileName, out var clip))
+            {
+                return clip;
+            }
+
+            // Next, check if the animation clip has been created (exists on disk)
+            var existingPath = PathHelper.GetSavePath(shortname, type) + "Animations/" + fileName + ".anim";
+            var animClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(existingPath);
+            if (animClip != null)
+            {
+                cache.Add(animClip.name, animClip);
+                return animClip;
+            }
+
+            if (!ImportHelper.LoadTextAsset(path, out var text))
+            {
+                return null;
+            }
+
+            // Create the animation clip
+            var ta = new TextAsset(text);
+            if (!AnimationHelper.TrySplitAnimationName(originalName, out _, out var at))
+            {
+                return null;
+            }
+
+            animClip = AnimationImporter.ImportAnimation(ta, modelBase, at, true, isReversed);
+
+            if (animClip == null)
+            {
+                Debug.LogError("Unable to create animation");
+                return null;
+            }
+
+            string savePath = PathHelper.GetSavePath(shortname, type) +
+                              "Animations/";
+            string folderPath = PathHelper.GetSystemPathFromUnity(savePath);
+            Directory.CreateDirectory(folderPath);
+            var clipFilename = $"{animClip.name}.anim";
+            AssetDatabase.CreateAsset(animClip, savePath + clipFilename);
+            cache.Add(animClip.name, animClip);
+            return animClip;
+        }
+
+        public static List<string> LoadAnimationPaths(string shortname, AssetImportType type)
+        {
+            var paths = new List<string>();
+            var searchPath = PathHelper.GetLoadPath(shortname, type) + "Animations";
+            var assets = AssetDatabase.FindAssets("t:textasset", new[] { searchPath });
+
+            foreach (var assetGuids in assets)
+            {
+                string realPath = AssetDatabase.GUIDToAssetPath(assetGuids);
+                paths.Add(realPath);
+            }
+
+            return paths;
         }
     }
 }

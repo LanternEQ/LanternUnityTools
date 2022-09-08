@@ -1,41 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Infastructure.SerializableDictionary;
-using Lantern.EQ;
+using System.Text;
+using Lantern.EQ.Lighting;
 using UnityEngine;
 
-namespace Lantern
+namespace Lantern.EQ.Equipment
 {
-    [Serializable]
-    public class EquipmentTextures : SerializableDictionary<SkinnedMeshRenderer, Skins>
-    {
-    }
-    
-    [Serializable]
-    public class Skins
-    {
-        public List<SkinTextures> SkinList;
-    }
-
-    public enum BodyType
-    {
-        Normal,
-        Robe
-    }
-
     /// <summary>
-    /// Manages characters and their variants.
-    /// Only used for non-playable races
+    /// Manages characters materials and their variants.
     /// </summary>
     public class Equipment2dHandler : VariantHandler
     {
-        [SerializeField] 
+        [SerializeField]
         private List<SkinnedMeshRenderer> _bodyMeshes = new List<SkinnedMeshRenderer>();
-        
-        [SerializeField] 
+
+        [SerializeField]
         private List<SkinnedMeshRenderer> _headMeshes = new List<SkinnedMeshRenderer>();
-        
+
         [SerializeField]
         List<AdditionalTextures> _faceSkins = new List<AdditionalTextures>();
 
@@ -45,6 +27,7 @@ namespace Lantern
         private SkinnedMeshRenderer _currentBody;
         private SkinnedMeshRenderer _currentHelm;
         private BodyType _currentBodyType;
+        private bool _isCustomFace;
 
         protected override void Awake()
         {
@@ -59,7 +42,7 @@ namespace Lantern
             {
                 return;
             }
-            
+
             for (int i = 0; i < _headMeshes.Count; ++i)
             {
                 _headMeshes[i].gameObject.SetActive(i == index);
@@ -71,14 +54,14 @@ namespace Lantern
         private void SetBodyType(BodyType type)
         {
             var previousBody = _currentBody;
-            
+
             if (_bodyMeshes.Count <= 1)
             {
                 _currentBody = _bodyMeshes[0];
                 _currentBodyType = BodyType.Normal;
                 return;
             }
-            
+
             _bodyMeshes[0].gameObject.SetActive(type == BodyType.Normal);
             _bodyMeshes[1].gameObject.SetActive(type == BodyType.Robe);
             _currentBody = type == BodyType.Normal ? _bodyMeshes[0] : _bodyMeshes[1];
@@ -86,7 +69,7 @@ namespace Lantern
 
             if (previousBody != _currentBody)
             {
-                GetComponent<SunlightSetterDynamic>().ForceUpdate();
+                GetComponent<AmbientLightSetterDynamic>().ForceUpdate();
             }
         }
 
@@ -135,7 +118,7 @@ namespace Lantern
             {
                 return;
             }
-            
+
             var materials = mesh.sharedMaterials;
 
             MaterialPropertyBlock pb = new MaterialPropertyBlock();
@@ -143,12 +126,12 @@ namespace Lantern
             for (int i = 0; i < materials.Length; i++)
             {
                 Texture texture = skin.Textures[i];
-                
+
                 if (texture == null)
                 {
                     continue;
                 }
-                
+
                 mesh.GetPropertyBlock(pb, i);
                 pb.SetTexture("_BaseMap", texture);
                 pb.SetColor("_BaseColor", color);
@@ -162,38 +145,45 @@ namespace Lantern
             {
                 return;
             }
-            
+
+            if (_isCustomFace)
+            {
+                return;
+            }
+
             if (faceId < 0 || faceId >= _faceSkins.Count)
             {
                 faceId = 0;
             }
-            
-            var primaryMesh = _mainMeshes.LastOrDefault();
 
-            if (primaryMesh == null)
+            var faceSkin = _faceSkins[faceId];
+
+            foreach(var mesh in _headMeshes)
             {
-                return;
-            }
-
-            var meshRenderer = primaryMesh.GetComponent<SkinnedMeshRenderer>();
-
-            if (meshRenderer == null)
-            {
-                return;
-            }
-
-            MaterialPropertyBlock pb = new MaterialPropertyBlock();
-
-            for (int i = 0; i < meshRenderer.sharedMaterials.Length; i++)
-            {
-                meshRenderer.GetPropertyBlock(pb, i);
-                if (_faceSkins[faceId].Textures[i] == null)
-                {
+                if (mesh == null)
                     continue;
+
+                var meshRenderer = mesh.GetComponent<SkinnedMeshRenderer>();
+                if (meshRenderer == null)
+                    continue;
+
+                var pb = new MaterialPropertyBlock();
+                for (int i = 0; i < meshRenderer.sharedMaterials.Length; i++)
+                {
+                    var faceTextureName = new StringBuilder(meshRenderer.sharedMaterials[i].name);
+                    faceTextureName[faceTextureName.Length - 2] = faceId.ToString().FirstOrDefault();
+                    var desiredTexture = faceTextureName.ToString();
+
+                    foreach (var texture in faceSkin.Textures)
+                    {
+                        if (texture == null || !desiredTexture.Contains(texture.name))
+                            continue;
+
+                        meshRenderer.GetPropertyBlock(pb, i);
+                        pb.SetTexture("_BaseMap", texture);
+                        meshRenderer.SetPropertyBlock(pb, i);
+                    }
                 }
-                
-                pb.SetTexture("_BaseMap", _faceSkins[faceId].Textures[i]);
-                meshRenderer.SetPropertyBlock(pb, i);
             }
         }
 
@@ -213,7 +203,7 @@ namespace Lantern
                 {
                     Textures = new Texture[textures.Length]
                 };
-                
+
                 for (int i = 0; i < textures.Length; i++)
                 {
                     at.Textures[i] = textures[i];
@@ -225,6 +215,16 @@ namespace Lantern
         public void SetFaceId(int face)
         {
             SetFace(face);
+        }
+
+        public int GetFaceCount()
+        {
+            return _faceSkins == null ? 0 : _faceSkins.Count;
+        }
+
+        public int GetHeadCount()
+        {
+            return _headMeshes == null ? 0 : _headMeshes.Count;
         }
 
         // TODO: Editor only
@@ -257,7 +257,7 @@ namespace Lantern
             foreach (var mesh in _secondaryMeshes)
             {
                 SkinnedMeshRenderer smr = mesh.GetComponent<SkinnedMeshRenderer>();
-                
+
                 if (smr != robeMesh)
                 {
                     _headMeshes.Add(smr);
@@ -285,7 +285,7 @@ namespace Lantern
                     throw new ArgumentOutOfRangeException(nameof(slot), slot, null);
             }
         }
-        
+
         public void SetArmorPiece(Equipment2dSlot slot, int skinId, Color color)
         {
             if (slot == Equipment2dSlot.Chest && IsRobeSkin(skinId))
@@ -301,7 +301,7 @@ namespace Lantern
             {
                 SetHelmType(skinId);
                 TintMesh(_currentHelm, color, true);
-                
+
                 if (IsErudite())
                 {
                     SetActiveSkin(_headMeshes.FirstOrDefault(), skinId, color);
@@ -353,25 +353,25 @@ namespace Lantern
 
             var defaultEquip = _equipmentTextures[_currentBody];
             var defaultSkin = defaultEquip.SkinList.FirstOrDefault();
-            
+
             if (skin == null || defaultSkin == null)
             {
                 return;
             }
-            
+
             var materials = _currentBody.sharedMaterials;
 
             MaterialPropertyBlock pb = new MaterialPropertyBlock();
 
             string targetSlotName = GetEquipSlotName(slot);
-            
+
             for (var i = 0; i < materials.Length; i++)
             {
                 if (!materials[i].name.Contains(targetSlotName))
                 {
                     continue;
                 }
-                
+
                 Texture texture = GetMatchingTextureInList(targetSlotName, materials[i].name.Substring(materials[i].name.Length - 2), defaultSkin.Textures[i], skin.Textures);
 
                 if (texture == null)
@@ -383,7 +383,7 @@ namespace Lantern
                         continue;
                     }
                 }
-                
+
                 _currentBody.GetPropertyBlock(pb, i);
                 pb.SetTexture("_BaseMap", texture);
                 pb.SetColor("_BaseColor", color);
@@ -419,7 +419,7 @@ namespace Lantern
             {
                 return true;
             }
-            
+
             switch(slot)
             {
                 case Equipment2dSlot.Foot:
@@ -437,19 +437,19 @@ namespace Lantern
             {
                 return;
             }
-            
+
             MaterialPropertyBlock pb = new MaterialPropertyBlock();
             var materials = mesh.sharedMaterials;
             SkinnedMeshRenderer baseMesh = isHelm ? _headMeshes[0] : _bodyMeshes[0];
             var baseMaterials = baseMesh.sharedMaterials;
-            
+
             for (var i = 0; i < materials.Length; i++)
             {
                 if (baseMaterials.Contains(materials[i]))
                 {
                     continue;
                 }
-                
+
                 mesh.GetPropertyBlock(pb, i);
                 pb.SetColor("_BaseColor", color);
                 mesh.SetPropertyBlock(pb, i);
@@ -462,20 +462,20 @@ namespace Lantern
             {
                 return null;
             }
-            
+
             foreach (var texture in textures)
             {
                 if (texture == null)
                 {
                     continue;
                 }
-                
+
                 if (texture.name.StartsWith(slotName) && texture.name.EndsWith(index))
                 {
                     return texture;
                 }
             }
-            
+
             return null;
         }
 
@@ -485,17 +485,17 @@ namespace Lantern
             {
                 return null;
             }
-            
+
             return _bodyMeshes[0];
         }
-        
+
         public SkinnedMeshRenderer GetRobeMesh()
         {
             if (_bodyMeshes == null || _bodyMeshes.Count <= 1)
             {
                 return null;
             }
-            
+
             return _bodyMeshes[1];
         }
 
@@ -515,13 +515,18 @@ namespace Lantern
             {
                 _equipmentTextures[skinnedMeshRenderer] = new Skins {SkinList = new List<SkinTextures>()};
             }
-            
+
             _equipmentTextures[skinnedMeshRenderer].SkinList.Add(new SkinTextures{SkinId = index, Textures = textures});
         }
 
         public bool IsRobeMeshActive()
         {
             return _currentBodyType == BodyType.Robe;
+        }
+
+        public void SetCustomFaceSet()
+        {
+            _isCustomFace = true;
         }
     }
 }

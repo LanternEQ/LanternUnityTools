@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Lantern.EQ;
+using Lantern.EQ.Data;
 using UnityEngine;
 
-namespace Lantern
+namespace Lantern.EQ.Sound
 {
     public class RaceSoundsDataParser : MonoBehaviour
     {
@@ -21,11 +21,11 @@ namespace Lantern
                 {
                     continue;
                 }
-            
+
                 var line = textLines[i];
 
                 var elements = line.Split(',');
-            
+
                 ModelSound newSound = new ModelSound();
 
                 newSound.RaceId = Convert.ToInt32(elements[0]);
@@ -34,16 +34,16 @@ namespace Lantern
                 switch (elements[2])
                 {
                     case "M":
-                        newSound.GenderId = Gender.Male;
+                        newSound.GenderId = GenderId.Male;
                         break;
                     case "F":
-                        newSound.GenderId = Gender.Female;
+                        newSound.GenderId = GenderId.Female;
                         break;
                     case "N":
-                        newSound.GenderId = Gender.Neutral;
+                        newSound.GenderId = GenderId.Neutral;
                         break;
                 }
-            
+
                 newSound.Loop = elements[3];
                 newSound.Idle1 = elements[4];
                 newSound.Idle2 = elements[5];

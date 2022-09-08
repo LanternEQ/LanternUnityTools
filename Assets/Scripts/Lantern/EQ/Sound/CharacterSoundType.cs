@@ -1,0 +1,33 @@
+﻿namespace Lantern.EQ.Sound
+{
+    public enum CharacterSoundType
+    {
+        Idle,
+        GetHit,
+        Jump,
+        Loop,
+        Gasp,
+        Death,
+        Drown,
+        Walking,
+        Running,
+        Attack,
+        SAttack,
+        TAttack,
+        Passive,
+        Sit,
+        Crouch,
+        Treading,
+        Swim,
+        Kneel,
+        Kick,
+        Pierce,
+        TwoHandSlash,
+        TwoHandBlunt,
+        Archery,
+        FlyingKick,
+        RapidPunch,
+        LargePunch,
+        Bash
+    }
+}

@@ -1,29 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Lantern.EQ.Sound;
 using UnityEngine;
 
-namespace Lantern
+namespace Lantern.EQ.Equipment
 {
-    [Serializable]
-    public class AdditionalMaterials
-    {
-        public Material[] materials;
-    }
-        
-    [Serializable]
-    public class AdditionalTextures
-    {
-        public Texture[] Textures;
-    }
-    
-    [Serializable]
-    public class SkinTextures
-    {
-        public int SkinId;
-        public Texture[] Textures;
-    }
-    
     /// <summary>
     /// Manages characters and their variants.
     /// Only used for non-playable races
@@ -32,17 +13,18 @@ namespace Lantern
     {
         [SerializeField]
         protected List<GameObject> _mainMeshes = new List<GameObject>();
-        
+
         [SerializeField]
         protected List<GameObject> _secondaryMeshes = new List<GameObject>();
 
-        protected CharacterSounds CharacterSounds;
+        // TODO: This can be set on import
+        protected CharacterSounds CharacterSoundsBase;
 
         protected virtual void Awake()
         {
-            CharacterSounds = GetComponent<CharacterSounds>();
+            CharacterSoundsBase = GetComponent<CharacterSounds>();
         }
-        
+
         public static void ParseCharacterSkin(string materialName, out string character, out string skinId,
             out string partName)
         {
@@ -53,7 +35,7 @@ namespace Lantern
                 partName = string.Empty;
                 return;
             }
-            
+
             character = materialName.Substring(0, 3);
             skinId = materialName.Substring(5, 2);
             partName = materialName.Substring(3, 2) + materialName.Substring(7, 2);
@@ -86,7 +68,7 @@ namespace Lantern
                     Debug.LogError("Trying to use an index that is out of range");
                     index = 0;
                 }
-                
+
                 for (int j = 0; j < meshes.Count; ++j)
                 {
                     meshes[j].SetActive(j == index);
@@ -98,7 +80,7 @@ namespace Lantern
         {
             _mainMeshes.Add(mesh);
         }
-        
+
         public void AddSecondaryMesh(GameObject mesh)
         {
             _secondaryMeshes.Add(mesh);

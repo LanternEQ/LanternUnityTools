@@ -1,20 +1,30 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.IO;
-using Lantern.Editor.Importers;
-using Lantern.Global.AssetBundles;
-using Lantern.Services;
+using Lantern.EQ.AssetBundles;
+using Lantern.EQ.Editor.Helpers;
+using Lantern.EQ.Zone;
 using UnityEditor;
-using UnityEditor.Build.Reporting;
 using UnityEngine;
 using File = System.IO.File;
 
-namespace Infrastructure.Editor
+namespace Lantern.EQ.Editor.AssetBundles
 {
+    /// <summary>
+    /// Creates asset bundles for the LanternEQ client
+    /// </summary>
     public static class CreateBuilds
     {
-        [MenuItem("Lantern/General/Build AssetBundles")]
+#if LANTERN_CLIENT
+        [MenuItem("Lantern/General/Build AssetBundles", false, 0)]
+#else
+        [MenuItem("EQ/Build AssetBundles", false, 100)]
+#endif
         public static void BuildAllAssetBundles()
+        {
+            BuildAllAssetBundles(true);
+        }
+
+        public static void BuildAllAssetBundles(bool showCompleteMessage)
         {
             if (EditorApplication.isPlaying)
             {
@@ -46,8 +56,12 @@ namespace Infrastructure.Editor
             SetAssetBundleVersions();
             AssetDatabase.Refresh();
             double endTime = EditorApplication.timeSinceStartup;
-            EditorUtility.DisplayDialog("AssetBundles",
-                $"Asset bundle build finished in {(int) (endTime - startTime)} seconds", "OK");
+
+            if (showCompleteMessage)
+            {
+                EditorUtility.DisplayDialog("AssetBundles",
+                    $"Asset bundle build finished in {(int) (endTime - startTime)} seconds", "OK");
+            }
         }
 
         private static void RestoreOriginalAssetBundleNames()
@@ -82,7 +96,7 @@ namespace Infrastructure.Editor
                 // Get the base type
                 string baseType = fileName.Split('-')[0];
 
-                GlobalAssetBundleId? id = AssetBundleVersions.GetBundleIdFromName(baseType);
+                LanternAssetBundleId? id = AssetBundleVersions.GetBundleIdFromName(baseType);
 
                 if (!id.HasValue)
                 {
@@ -105,7 +119,7 @@ namespace Infrastructure.Editor
 
                     string bundleName = string.Empty;
 
-                    if (id.Value == GlobalAssetBundleId.Zones)
+                    if (id.Value == LanternAssetBundleId.Zones)
                     {
                         bundleName = baseType;
                     }
@@ -139,10 +153,10 @@ namespace Infrastructure.Editor
 
         private static void SetAssetBundleVersions()
         {
-            var values = Enum.GetValues(typeof(GlobalAssetBundleId));
-            foreach (GlobalAssetBundleId value in values)
+            var values = Enum.GetValues(typeof(LanternAssetBundleId));
+            foreach (LanternAssetBundleId value in values)
             {
-                if (value == GlobalAssetBundleId.Zones)
+                if (value == LanternAssetBundleId.Zones)
                 {
                     continue;
                 }
@@ -192,112 +206,5 @@ namespace Infrastructure.Editor
                 File.Move(manifestPath, manifestWithVersion);
             }
         }
-
-        private static BuildPlayerOptions GetBuildOptions(BuildTarget target, bool isDebug = false)
-        {
-            string folderName = GetPlatformFolderName(target);
-
-            BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
-            {
-                scenes = new[] {"Assets/Scenes/ZoneViewerRoot.unity"},
-                locationPathName = $"Builds/{folderName}/LZV/LZV",
-                target = target,
-                options = isDebug ? BuildOptions.Development : BuildOptions.None
-            };
-
-            if (target == BuildTarget.StandaloneWindows64)
-            {
-                buildPlayerOptions.locationPathName += ".exe";
-            }
-
-            return buildPlayerOptions;
-        }
-
-        private static string GetPlatformFolderName(BuildTarget target)
-        {
-            switch (target)
-            {
-                case BuildTarget.Android:
-                {
-                    return "Android";
-                }
-                case BuildTarget.StandaloneLinux64:
-                {
-                    return "Linux";
-                }
-                case BuildTarget.StandaloneOSX:
-                {
-                    return "macOS";
-                }
-                case BuildTarget.StandaloneWindows64:
-                {
-                    return "Windows";
-                }
-            }
-
-            return string.Empty;
-        }
-
-        [MenuItem("Lantern/Build OSX")]
-        public static void BuildOSX()
-        {
-            bool wasSuccessful = CreateBuild(BuildTarget.StandaloneOSX);
-            EditorUtility.DisplayDialog("Build finished", GetBuildMessage(wasSuccessful), "OK");
-        }
-
-        private static string GetBuildMessage(bool wasSuccessful)
-        {
-            return wasSuccessful ? "Build completed successfully" : "Build failed. See console for log";
-        }
-
-        [MenuItem("Lantern/Build Linux")]
-        public static void BuildLinux()
-        {
-            bool wasSuccessful = CreateBuild(BuildTarget.StandaloneLinux64);
-            EditorUtility.DisplayDialog("Build finished", GetBuildMessage(wasSuccessful), "OK");
-        }
-
-        [MenuItem("Lantern/Build Windows")]
-        public static void BuildWindows()
-        {
-            bool wasSuccessful = CreateBuild(BuildTarget.StandaloneWindows64);
-            EditorUtility.DisplayDialog("Build finished", GetBuildMessage(wasSuccessful), "OK");
-        }
-
-        [MenuItem("Lantern/Build All")]
-        public static void BuildAll()
-        {
-            bool wasSuccessfulWindows = CreateBuild(BuildTarget.StandaloneWindows64);
-            bool wasSuccessfulLinux = CreateBuild(BuildTarget.StandaloneLinux64);
-            bool wasSuccessfulOsx = CreateBuild(BuildTarget.StandaloneOSX);
-            EditorUtility.DisplayDialog("Builds finished",
-                GetBuildMessage(wasSuccessfulWindows && wasSuccessfulLinux && wasSuccessfulOsx), "OK");
-        }
-
-        public static bool CreateBuild(BuildTarget targetPlatform)
-        {
-            BuildPipeline.BuildAssetBundles("Assets/StreamingAssets/AssetBundles", BuildAssetBundleOptions.None,
-                targetPlatform);
-
-            var buildOptions = GetBuildOptions(targetPlatform);
-
-            BuildReport report = BuildPipeline.BuildPlayer(buildOptions);
-            BuildSummary summary = report.summary;
-
-            if (summary.result == BuildResult.Succeeded)
-            {
-                Debug.Log("Build succeeded: " + summary.totalSize + " bytes");
-                return true;
-            }
-
-            if (summary.result == BuildResult.Failed)
-            {
-                Debug.Log("Build failed");
-                return false;
-            }
-
-            return false;
-        }
     }
 }
-#endif

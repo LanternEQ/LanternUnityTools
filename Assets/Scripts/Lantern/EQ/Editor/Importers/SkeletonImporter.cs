@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Lantern.EQ;
+using Infrastructure.EQ.TextParser;
 using Lantern.EQ.Animation;
-using Lantern.Helpers;
-using Lantern.Logic;
+using Lantern.EQ.Editor.Helpers;
+using Lantern.EQ.Equipment;
+using Lantern.EQ.Helpers;
+using Lantern.EQ.Lighting;
 using UnityEditor;
 using UnityEngine;
 
@@ -31,7 +33,7 @@ namespace Lantern.Editor.Importers
                 Debug.LogError($"SkeletonImporter: Invalid skeleton text asset for: {assetName}");
                 return;
             }
-            
+
             if (skeletonLines[0][0] == "meshes")
             {
                 for (int i = 1; i < skeletonLines[0].Count; ++i)
@@ -69,9 +71,10 @@ namespace Lantern.Editor.Importers
             // LANTERN ONLY START
             if (importType == AssetImportType.Objects)
             {
-                var vertexColorDebug = skeletonRoot.AddComponent<VertexColorSetterNew>();
+                var vertexColorDebug = skeletonRoot.AddComponent<VertexColorSetter>();
                 vertexColorDebug.FindMeshFilters();
-                skeletonRoot.AddComponent<AnimatedObject>().AddAnimationClip(animClip);
+                var animatedObject = skeletonRoot.AddComponent<ObjectAnimation>();
+                animatedObject.Initialize(animClip);
             }
 
             VariantHandler handler = null;
@@ -94,7 +97,7 @@ namespace Lantern.Editor.Importers
                 meshesToCreate.Add("elm");
                 meshesToCreate.Add("elmhe00");
             }
-            
+
             // Create skinned meshes
             for (int i = 0; i < meshesToCreate.Count; i++)
             {
@@ -109,7 +112,7 @@ namespace Lantern.Editor.Importers
                 }
 
                 go.transform.parent = skeletonRoot.transform;
-                
+
                 if (assetName == "ivm")
                 {
                     go.GetComponent<Renderer>().renderingLayerMask = 0;
@@ -155,7 +158,7 @@ namespace Lantern.Editor.Importers
             if (boneData.Count != 2)
             {
                 var meshName = boneData[2];
-                
+
                 if (!string.IsNullOrEmpty(meshName))
                 {
                     var collision = MeshImporter.Import(zoneName, meshName + "_collision", null, null, importType, true,

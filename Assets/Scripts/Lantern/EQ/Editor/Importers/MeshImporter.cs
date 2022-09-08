@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Lantern.EQ;
+using Infrastructure.EQ.TextParser;
 using Lantern.EQ.Animation;
+using Lantern.EQ.Editor.Helpers;
+using Lantern.EQ.Equipment;
+using Lantern.EQ.Lantern;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -23,7 +26,7 @@ namespace Lantern.Editor.Importers
             string folderPath = PathHelper.GetSystemPathFromUnity(savePath);
             Directory.CreateDirectory(folderPath);
             Directory.CreateDirectory($"{folderPath}Meshes/");
-            
+
             string assetPath = loadPath + $"Meshes/{assetName}.txt";
 
             if (!ImportHelper.LoadTextAsset(assetPath, out var zoneModelAsset))
@@ -32,7 +35,7 @@ namespace Lantern.Editor.Importers
                 {
                     Debug.LogError("MeshImporter: Unable to load text asset at: " + assetPath);
                 }
-                
+
                 return null;
             }
 
@@ -46,11 +49,11 @@ namespace Lantern.Editor.Importers
             Dictionary<int, List<Vector3Int>> indices = new Dictionary<int, List<Vector3Int>>();
             List<IndexPair> newIndices = new List<IndexPair>();
             List<BoneWeight> boneWeights = new List<BoneWeight>();
-            
+
             int highestIndex = 0;
             string materialListName = string.Empty;
             int animationDelayMs = 0;
-            
+
             foreach (List<string> line in modelLines)
             {
                 if (line.Count == 0)
@@ -105,7 +108,7 @@ namespace Lantern.Editor.Importers
                                 indexCluster.Values.Add(new Vector3Int(vertex1, vertex2, vertex3));
                             }
                         }
-                        
+
                         break;
                     }
 
@@ -159,7 +162,7 @@ namespace Lantern.Editor.Importers
 
             Material[] materials = null;
             List<Material[]> allMaterials = null;
-            List<AnimatedMaterial> animatedMaterials = new List<AnimatedMaterial>();
+            List<MaterialAnimationData> animatedMaterials = new List<MaterialAnimationData>();
 
             if (materialListName != string.Empty)
             {
@@ -241,14 +244,14 @@ namespace Lantern.Editor.Importers
             {
                 returnObject = CreateSkinnedMeshAsset(savePath, assetName, mesh, allMaterials, boneWeights, bones, poses, createPrefab, usedIndices);
             }
-            
+
             return returnObject;
         }
 
         private static GameObject CreateMeshAsset(string shortname, string savePath, string assetName, Mesh mesh,
             List<List<Vector3>> animatedVertices, int animationDelay, Material[] materials,
             AssetImportType assetImportType, bool isCollisionMesh, List<int> usedIndices, bool createPrefab,
-            List<AnimatedMaterial> animatedMaterials, Action<GameObject> postProcess)
+            List<MaterialAnimationData> animatedMaterials, Action<GameObject> postProcess)
         {
             if (isCollisionMesh)
             {
@@ -292,8 +295,8 @@ namespace Lantern.Editor.Importers
             // Equipment animation
             if (meshRenderer != null && animatedMaterials != null)
             {
-                List<AnimatedMaterial> am = new List<AnimatedMaterial>();
-                TextureAnimation eta = null;
+                List<MaterialAnimationData> am = new List<MaterialAnimationData>();
+                MaterialAnimation eta = null;
 
                 for (int i = 0; i < meshRenderer.sharedMaterials.Length; ++i)
                 {
@@ -308,7 +311,7 @@ namespace Lantern.Editor.Importers
 
                     if (eta == null)
                     {
-                        eta = newObject.AddComponent<TextureAnimation>();
+                        eta = newObject.AddComponent<MaterialAnimation>();
                     }
 
                     eta.AddInstance(matchingMaterial, i);
@@ -328,7 +331,7 @@ namespace Lantern.Editor.Importers
 
             if (animatedMeshes.Count != 0)
             {
-                MeshAnimatedVertices meshSetter = newObject.AddComponent<MeshAnimatedVertices>();
+                MeshVertexAnimation meshSetter = newObject.AddComponent<MeshVertexAnimation>();
                 meshSetter.SetData(animatedMeshes, animationDelay);
             }
 
@@ -376,7 +379,7 @@ namespace Lantern.Editor.Importers
 
             return newObject;
         }
-        
+
         private static GameObject CreateSkinnedMeshAsset(string savePath, string assetName, Mesh mesh,
             List<Material[]> materials, List<BoneWeight> boneWeights, Transform[] bones, Matrix4x4[] poses, bool createPrefab, List<int> usedIndices)
         {
@@ -413,7 +416,7 @@ namespace Lantern.Editor.Importers
             {
                 return newObject;
             }
-            
+
             PrefabUtility.SaveAsPrefabAsset(newObject, savePath + assetName + ".prefab");
             AssetDatabase.Refresh();
             Object.DestroyImmediate(newObject);
@@ -472,7 +475,7 @@ namespace Lantern.Editor.Importers
 
                 if (submeshIndices.Max() >= vertices.Count)
                 {
-                    continue;   
+                    continue;
                 }
 
                 mesh.SetTriangles(submeshIndices, submeshIndex);

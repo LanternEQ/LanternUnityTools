@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
-using Lantern.Data;
+using Lantern.EQ.Lantern;
+using Lantern.EQ.Lighting;
 using UnityEngine;
 
-namespace Lantern.EQ
+namespace Lantern.EQ.Helpers
 {
     public static class RaycastHelper
     {
@@ -10,7 +11,7 @@ namespace Lantern.EQ
         private static readonly float MaxDistance = 1000000f;
 
         public static bool TryGetSunlightValueEditor(Vector3 centerPosition, float radius,
-            ZoneMeshSunlightValues sunlightValues, out float sunlightValue)
+            ZoneAmbientLightValues sunlightValues, out float sunlightValue)
         {
             sunlightValue = 0f;
 
@@ -167,7 +168,7 @@ namespace Lantern.EQ
             return false;
         }
 
-        public static bool TryGetSunlightValueRuntime(Vector3 origin, ZoneMeshSunlightValues sunlightValues,
+        public static bool TryGetSunlightValueRuntime(Vector3 origin, ZoneAmbientLightValues sunlightValues,
             out float sunlightValue)
         {
             if (TryRaycastSingleNonAlloc(origin, Vector3.down, 1000f,
@@ -187,11 +188,11 @@ namespace Lantern.EQ
                 sunlightValue = mixedColor;
                 return true;
             }
-            
+
             sunlightValue = 0f;
             return false;
         }
-        
+
         public static bool TryGetGroundHeight(Vector3 origin, out float height, bool includeNonSolidSurfaces = false)
         {
             if (TryRaycastSingleNonAlloc(origin, Vector3.down, 1000f,
@@ -205,14 +206,14 @@ namespace Lantern.EQ
             height = 0f;
             return false;
         }
-        
+
         public static bool TryGetGroundHeightDebug(Vector3 position, out float height)
         {
             // The number added to the y-pos cannot be too large or NPCs will path onto walls when walking thru gates.
             // If the value is too low, they will not follow elevated terrain (like in Paineel newbie area) very good either.
             RaycastHit hit;
             // TODO: Most likely needs to use the capsule height of the NPC to determine the proper starting height of the cast.
-            if (Physics.Raycast(position, Vector3.down, out hit, 1000f, 
+            if (Physics.Raycast(position, Vector3.down, out hit, 1000f,
                 1 << LanternLayers.ObjectsStaticLit | 1 << LanternLayers.ObjectsDynamicLit | 1 << LanternLayers.ZoneRaycast))
             {
                 Debug.LogError("Raycast hit: " + hit.collider.name + " at: " + hit.point.y);
@@ -232,7 +233,7 @@ namespace Lantern.EQ
         {
             int hits = Physics.RaycastNonAlloc(origin, direction, Hits, distance, mask);
             hit = null;
-            
+
             if (hits == 0)
             {
                 return false;

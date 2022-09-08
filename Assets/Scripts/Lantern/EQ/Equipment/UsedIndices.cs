@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class UsedIndices : MonoBehaviour
+namespace Lantern.EQ.Equipment
 {
-    public List<int> Indices;
+    public class UsedIndices : MonoBehaviour
+    {
+        public List<int> Indices;
+    }
 }
 

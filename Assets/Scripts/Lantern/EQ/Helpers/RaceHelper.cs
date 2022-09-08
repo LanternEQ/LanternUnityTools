@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Lantern.Editor;
-using Lantern.EQ;
+using Infrastructure.EQ.TextParser;
+using Lantern.EQ.Data;
 using UnityEngine;
 
 // TODO: Move this elsewhere
 
-namespace Lantern.Helpers
+namespace Lantern.EQ.Helpers
 {
     public static class RaceHelper
     {
         private static Dictionary<int, RaceData> RaceValues = new Dictionary<int, RaceData>();
-        
+
         public static float GetBoundingRadius(int id)
         {
             if (RaceValues == null || RaceValues.Count == 0)
@@ -42,7 +42,7 @@ namespace Lantern.Helpers
                 }
 
                 int id = Convert.ToInt32(lines[i][0]);
-                
+
                 RaceValues.Add(id, new RaceData
                 {
                     Id = id,
@@ -55,7 +55,7 @@ namespace Lantern.Helpers
                     ScaleFactor = float.Parse(lines[i][7]),
                     Size = float.Parse(lines[i][8])
                 });
-            }        
+            }
         }
 
         public class RaceData
@@ -75,37 +75,42 @@ namespace Lantern.Helpers
         public static string DefaultFemaleModel = "HUF";
         public static string DefaultNeutralModel = "HUM";
         public static float DefaultSize = 6f;
+
         public static float GetRaceDefaultSize(int raceId)
         {
             switch (raceId)
             {
-                case 1:
-                case 3:
-                case 5:
-                    return 6;
+                // Barbarian
                 case 2:
                     return 7;
+                // Wood Elf, Dark Elf
                 case 4:
                 case 6:
                     return 5;
-                // TODO: Verify
+                // Half Elf
                 case 7:
-                    return 5.30000019073486f;
+                    return 5.5f;
+                // Dwarf
                 case 8:
                     return 4;
+                // Troll
                 case 9:
-                    return 7.5f;
+                    return 8f;
+                // Ogre
                 case 10:
-                    return 8.8f;
+                    return 9f;
+                // Halfling
                 case 11:
                     return 3.5f;
+                // Gnome
                 case 12:
                     return 3;
+                // Human, Erudite, Half Elf, Iksar...
+                default:
+                    return DefaultSize;
             }
-            
-            return 6;
         }
-        
+
         public static int GetRaceIdFromCharacterCreateId(RaceIdDb raceIdDb)
         {
             switch (raceIdDb)
@@ -296,7 +301,7 @@ namespace Lantern.Helpers
             {98, new RaceGenderModels {Male = "VSM", Female = "VSF"}},
             {99, new RaceGenderModels {Neutral = "DEN"}},
             {100, new RaceGenderModels {Neutral = "DER"}},
-            {101, new RaceGenderModels {Neutral = "EFR"}}, 
+            {101, new RaceGenderModels {Neutral = "EFR"}},
             {102, new RaceGenderModels {Neutral = "FRT"}},
             {103, new RaceGenderModels {Neutral = "KED"}},
             {104, new RaceGenderModels {Neutral = "LEE"}},
@@ -398,12 +403,12 @@ namespace Lantern.Helpers
             {
                 return raceInfo.Male;
             }
-            
+
             if ((genderId == -1 || genderId == 1) && !string.IsNullOrEmpty(raceInfo.Female))
             {
                 return raceInfo.Female;
             }
-            
+
             if ((genderId == -1 || genderId == 2) && !string.IsNullOrEmpty(raceInfo.Neutral))
             {
                 return raceInfo.Neutral;
@@ -413,26 +418,26 @@ namespace Lantern.Helpers
             return GetDefaultModelForGender(gender);
         }
 
-        public static Gender GetGenderFromGenderId(int genderId)
+        public static GenderId GetGenderFromGenderId(int genderId)
         {
             switch (genderId)
             {
                 case 0:
-                    return Gender.Male;
+                    return GenderId.Male;
                 case 1:
-                    return Gender.Female;
+                    return GenderId.Female;
                 case 2:
-                    return Gender.Neutral;
+                    return GenderId.Neutral;
             }
 
-            return Gender.Male;
+            return GenderId.Male;
         }
 
-        public static string GetDefaultModelForGender(Gender gender)
+        public static string GetDefaultModelForGender(GenderId genderId)
         {
-            switch (gender)
+            switch (genderId)
             {
-                case Gender.Female:
+                case GenderId.Female:
                     return DefaultFemaleModel;
                 default:
                     return DefaultMaleModel;
@@ -442,7 +447,7 @@ namespace Lantern.Helpers
         public static int? GetRaceIdFromModelName(string modelName)
         {
             modelName = modelName.ToLower();
-            
+
             foreach (var id in RaceIds)
             {
                 var variantNames = id.Value;
@@ -462,7 +467,7 @@ namespace Lantern.Helpers
             return null;
         }
 
-        public static Gender? GetRaceGenderFromModelName(string modelName)
+        public static GenderId? GetRaceGenderFromModelName(string modelName)
         {
             modelName = modelName.ToUpper();
             foreach (var id in RaceIds)
@@ -470,17 +475,17 @@ namespace Lantern.Helpers
                 var variantNames = id.Value;
                 if (variantNames.Male == modelName)
                 {
-                    return Gender.Male;
+                    return GenderId.Male;
                 }
 
                 if (variantNames.Female == modelName)
                 {
-                    return Gender.Female;
+                    return GenderId.Female;
                 }
 
                 if (variantNames.Neutral == modelName)
                 {
-                    return Gender.Neutral;
+                    return GenderId.Neutral;
                 }
             }
 
@@ -508,6 +513,12 @@ namespace Lantern.Helpers
                 default:
                     return 0.625f;
             }
+        }
+
+        public static float GetCapsuleWidthForRace(int raceId)
+        {
+            // TODO: Need to flesh this data out. Tried looking for it in the client. No luck so far. Will have to sampled
+            return 0.1875f;
         }
 
         public static bool IsFixedSizeRace(int raceId)
@@ -551,36 +562,36 @@ namespace Lantern.Helpers
             return RaceValues[raceId].Name;
         }
 
-        public static string GetPlayableRaceModelFromRaceId(PlayableRaceId race, Gender gender)
+        public static string GetPlayableRaceModelFromRaceId(PlayerRaceId race, GenderId genderId)
         {
             switch (race)
             {
-                case PlayableRaceId.Human:
-                    return gender == Gender.Male ? "HUM" : "HUF";
-                case PlayableRaceId.Barbarian:
-                    return gender == Gender.Male ? "BAM" : "BAF";
-                case PlayableRaceId.Erudite:
-                    return gender == Gender.Male ? "ERM" : "ERF";
-                case PlayableRaceId.Wood_Elf:
-                    return gender == Gender.Male ? "ELM" : "ELF";
-                case PlayableRaceId.High_Elf:
-                    return gender == Gender.Male ? "HIM" : "HIF";
-                case PlayableRaceId.Dark_Elf:
-                    return gender == Gender.Male ? "DAM" : "DAF";
-                case PlayableRaceId.Half_Elf:
-                    return gender == Gender.Male ? "HAM" : "HAF";
-                case PlayableRaceId.Dwarf:
-                    return gender == Gender.Male ? "DWM" : "DWF";
-                case PlayableRaceId.Troll:
-                    return gender == Gender.Male ? "TRM" : "TRF";
-                case PlayableRaceId.Ogre:
-                    return gender == Gender.Male ? "OGM" : "OGF";
-                case PlayableRaceId.Halfling:
-                    return gender == Gender.Male ? "HOM" : "HOF";
-                case PlayableRaceId.Gnome:
-                    return gender == Gender.Male ? "GNM" : "GNF";
-                case PlayableRaceId.Iksar:
-                    return gender == Gender.Male ? "IKM" : "IKF";
+                case PlayerRaceId.Human:
+                    return genderId == GenderId.Male ? "HUM" : "HUF";
+                case PlayerRaceId.Barbarian:
+                    return genderId == GenderId.Male ? "BAM" : "BAF";
+                case PlayerRaceId.Erudite:
+                    return genderId == GenderId.Male ? "ERM" : "ERF";
+                case PlayerRaceId.Wood_Elf:
+                    return genderId == GenderId.Male ? "ELM" : "ELF";
+                case PlayerRaceId.High_Elf:
+                    return genderId == GenderId.Male ? "HIM" : "HIF";
+                case PlayerRaceId.Dark_Elf:
+                    return genderId == GenderId.Male ? "DAM" : "DAF";
+                case PlayerRaceId.Half_Elf:
+                    return genderId == GenderId.Male ? "HAM" : "HAF";
+                case PlayerRaceId.Dwarf:
+                    return genderId == GenderId.Male ? "DWM" : "DWF";
+                case PlayerRaceId.Troll:
+                    return genderId == GenderId.Male ? "TRM" : "TRF";
+                case PlayerRaceId.Ogre:
+                    return genderId == GenderId.Male ? "OGM" : "OGF";
+                case PlayerRaceId.Halfling:
+                    return genderId == GenderId.Male ? "HOM" : "HOF";
+                case PlayerRaceId.Gnome:
+                    return genderId == GenderId.Male ? "GNM" : "GNF";
+                case PlayerRaceId.Iksar:
+                    return genderId == GenderId.Male ? "IKM" : "IKF";
             }
 
             return string.Empty;
@@ -598,8 +609,46 @@ namespace Lantern.Helpers
             {
                 return RaceIdDb.Iksar;
             }
-            
+
             return (RaceIdDb)MathHelper.GetPowerOfTwo(raceId - 1);
+        }
+
+        public static List<RaceData> FindRaces(string name)
+        {
+            if (RaceValues.Count == 0)
+            {
+                ParseRaceDataFromFile();
+            }
+
+            var races = new List<RaceData>();
+
+            foreach (var race in RaceValues.Values)
+            {
+                if (race.Name.ToLower().Contains(name.ToLower()))
+                {
+                    races.Add(race);
+                }
+            }
+
+            return races;
+        }
+
+        public static bool IsKoboldVariantEdgeCase(int texture, int helmTexture, int raceId)
+        {
+            return raceId == 48 && texture == 2 || raceId == 48 && texture == 1 && helmTexture == 0;
+        }
+
+        public static bool IsHiddenNameRace(int raceId)
+        {
+            switch (raceId)
+            {
+                // gargoyle, mimic, skeleton
+                case 29:
+                case 52:
+                // case 60: and an unknown flag is set
+                    return true;
+            }
+            return false;
         }
     }
 }

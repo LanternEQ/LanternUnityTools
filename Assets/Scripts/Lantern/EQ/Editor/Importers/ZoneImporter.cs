@@ -1,9 +1,14 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Lantern.Editor.Helpers;
-using Lantern.EQ;
-using Lantern.Logic;
+using System.Text;
+using Infrastructure.EQ.TextParser;
+using Lantern.EQ.Editor.AssetBundles;
+using Lantern.EQ.Editor.Helpers;
+using Lantern.EQ.Lantern;
+using Lantern.EQ.Lighting;
+using Lantern.EQ.Objects;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,8 +29,9 @@ namespace Lantern.Editor.Importers
         private GameObject _soundRoot;
         private GameObject _doorsRoot;
 
-        private bool _preinstantiateObjects = false;
-        private bool _preinstantiateDoors = false;
+        private bool _preinstantiateObjects;
+        private bool _preinstantiateDoors;
+        private bool _rebuildBundles;
 
         /// <summary>
         /// Opens the zone importer settings window
@@ -42,12 +48,13 @@ namespace Lantern.Editor.Importers
         private void OnGUI()
         {
             // Force the window size
-            int minHeight = 80;
+            int minHeight = 100;
             minSize = maxSize = new Vector2(225, minHeight);
             EditorGUIUtility.labelWidth = 100;
             _zoneShortname = EditorGUILayout.TextField("Zone Shortname", _zoneShortname);
-            _preinstantiateObjects = GUILayout.Toggle(_preinstantiateObjects, "Preinstantiate Objects");
-            _preinstantiateDoors = GUILayout.Toggle(_preinstantiateDoors, "Preinstantiate Doors");
+            _preinstantiateObjects = GUILayout.Toggle(_preinstantiateObjects, "Pre-instantiate Objects");
+            _preinstantiateDoors = GUILayout.Toggle(_preinstantiateDoors, "Pre-instantiate Doors");
+            _rebuildBundles = GUILayout.Toggle(_rebuildBundles, "Rebuild Bundles");
             Rect r = EditorGUILayout.BeginHorizontal("Button");
             if (GUI.Button(r, GUIContent.none))
             {
@@ -77,7 +84,7 @@ namespace Lantern.Editor.Importers
                 return;
             }
 
-            var startTime = EditorApplication.timeSinceStartup;
+            var startTime = (float)EditorApplication.timeSinceStartup;
             var splitNames = _zoneShortname.Split(';').ToList();
 
             if (splitNames.Count == 1 && (splitNames[0] == "all" || splitNames[0] == "antonica"
@@ -90,7 +97,7 @@ namespace Lantern.Editor.Importers
                 if (!ImportHelper.LoadTextAsset($"Assets/Content/ClientData/zonelist_{splitNames[0]}.txt",
                     out var allShortnames))
                 {
-                    Debug.LogError("$ZoneImporter: Unable to load zone list for specifier: {splitNames[0]}");
+                    Debug.LogError($"ZoneImporter: Unable to load zone list for specifier: {splitNames[0]}");
                     return;
                 }
 
@@ -99,19 +106,37 @@ namespace Lantern.Editor.Importers
 
             Close();
 
+            List<string> successful = new List<string>();
+            List<string> failed = new List<string>();
+
             foreach (var shortname in splitNames)
             {
-                ImportZone(shortname);
+                if (ImportZone(shortname))
+                {
+                    successful.Add(shortname);
+                }
+                else
+                {
+                    failed.Add(shortname);
+                }
             }
 
-            EditorUtility.DisplayDialog("ZoneImport",
-                $"Zone(s) import finished in {(int) (EditorApplication.timeSinceStartup - startTime)} seconds", "OK");
+            if (_rebuildBundles)
+            {
+                CreateBuilds.BuildAllAssetBundles(false);
+            }
+
+            string importResult = GetFormattedImportResult(startTime, successful, failed);
+
+            EditorUtility.DisplayDialog("ZoneImport" + (_rebuildBundles ? "/BuildBundles" : string.Empty),
+                importResult.ToString(),
+                "OK");
 
             // LANTERN ONLY
             Shader.SetGlobalColor("_DayNightColor", Color.white);
         }
 
-        private void ImportZone(string shortname)
+        private bool ImportZone(string shortname)
         {
             shortname = shortname.ToLower();
 
@@ -121,7 +146,7 @@ namespace Lantern.Editor.Importers
             if (!Directory.Exists(path))
             {
                 Debug.LogError($"ZoneImporter: No folder at path: {path}");
-                return;
+                return false;
             }
 
             TextureHelper.CopyTextures(shortname, AssetImportType.Zone);
@@ -134,6 +159,7 @@ namespace Lantern.Editor.Importers
             CopyBspTree(shortname);
             CreateGlobalAmbientLightSetter(shortname);
             CreateZonePrefab(shortname);
+            CreateAmbientLightValues();
             ImportObjects(shortname);
             ImportLights(shortname);
             ImportSounds(shortname);
@@ -147,8 +173,9 @@ namespace Lantern.Editor.Importers
             ScalePrefab();
             TagRoots();
             SaveZonePrefab(shortname);
-            TagAllAssetsForBundles(PathHelper.GetRootSavePath(shortname, false), shortname);
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetRootSavePath(shortname, false), shortname);
             DestroyImmediate(_prefabRoot);
+            return true;
         }
 
         private void DeleteOldAssets(string shortname)
@@ -189,9 +216,31 @@ namespace Lantern.Editor.Importers
             {
                 if (go != null)
                 {
-                    var vcsn = go.AddComponent<VertexColorSetterNew>();
+                    var vcsn = go.AddComponent<VertexColorSetter>();
                     vcsn.FindMeshFilters();
                 }
+
+                if (go.name.StartsWith("ladder"))
+                {
+                    var currentCollider = go.GetComponent<Collider>();
+                    if (currentCollider != null)
+                    {
+                        DestroyImmediate(currentCollider);
+                    }
+
+                    go.AddComponent<BoxCollider>();
+                    var climbTrigger = go.AddComponent<BoxCollider>();
+                    climbTrigger.isTrigger = true;
+                    var size = climbTrigger.size;
+                    size.x += 1f;
+                    size.y += 1f;
+                    size.z += 1f;
+                    climbTrigger.size = size;
+                }
+
+                var rb = go.AddComponent<Rigidbody>();
+                rb.useGravity = false;
+                rb.isKinematic = true;
             });
 
             ActorSkeletalImporter.ImportList(shortname, AssetImportType.Objects);
@@ -238,7 +287,7 @@ namespace Lantern.Editor.Importers
 
             var colorValues = parsedLightLines[0];
 
-            GlobalAmbientLightSetter lightSetter = _prefabRoot.AddComponent<GlobalAmbientLightSetter>();
+            AmbientLightSetterGlobal lightSetter = _prefabRoot.AddComponent<AmbientLightSetterGlobal>();
             lightSetter.SetGlobalLightColor(new Color(Convert.ToInt32(colorValues[0]) / 255f,
                 Convert.ToInt32(colorValues[1]) / 255f,
                 Convert.ToInt32(colorValues[2]) / 255f));
@@ -257,10 +306,9 @@ namespace Lantern.Editor.Importers
                 return;
             }
 
-            GameObject zoneObject = (GameObject) PrefabUtility.InstantiatePrefab(zonePrefab);
+            GameObject zoneObject = (GameObject)PrefabUtility.InstantiatePrefab(zonePrefab);
             zoneObject.transform.parent = _zoneRoot.transform;
             zoneObject.layer = LanternLayers.Zone;
-            zoneObject.AddComponent<ZoneMeshSunlightValues>();
         }
 
         private void ImportObjects(string shortname)
@@ -293,7 +341,7 @@ namespace Lantern.Editor.Importers
         private void ImportDoors(string shortname)
         {
             //DoorImporter.CreateDoorInstances(shortname, FindObjectOfType<ZoneMeshSunlightValues>(),
-              //  _doorsRoot.transform);
+            //  _doorsRoot.transform);
         }
 
         private void ScalePrefab()
@@ -321,23 +369,63 @@ namespace Lantern.Editor.Importers
             _doorsRoot.tag = LanternTags.DoorRoot;
         }
 
+        private void CreateAmbientLightValues()
+        {
+            var ambientLight = _prefabRoot.AddComponent<ZoneAmbientLightValues>();
+
+            foreach (Transform child in _prefabRoot.transform)
+            {
+                if (child.name != "Zone")
+                {
+                    continue;
+                }
+
+                var meshFilter = child.GetComponentInChildren<MeshFilter>();
+                ambientLight.SetMeshFilter(meshFilter);
+            }
+        }
+
         private void SaveZonePrefab(string shortname)
         {
             PrefabUtility.SaveAsPrefabAsset(_prefabRoot,
                 PathHelper.GetRootSavePath(shortname) + shortname + ".prefab");
         }
 
-        public static void TagAllAssetsForBundles(string folderPath, string bundleTag)
+        private string GetFormattedImportResult(float startTime, List<string> successful, List<string> failed)
         {
-            AssetImporter importer = AssetImporter.GetAtPath(folderPath);
-
-            if (importer == null)
+            StringBuilder importResult = new StringBuilder();
+            importResult.AppendLine($"Zone(s) import {(_rebuildBundles ? "and build bundles " : String.Empty)}finished in {(int)(EditorApplication.timeSinceStartup - startTime)} seconds.");
+            importResult.AppendLine();
+            if (successful.Count > 0)
             {
-                return;
+                importResult.AppendLine("SUCCESSFUL");
+                for (var i = 0; i < successful.Count; i++)
+                {
+                    if (i != 0)
+                    {
+                        importResult.Append(", ");
+                    }
+                    importResult.Append(successful[i]);
+                }
+
+                importResult.AppendLine();
+                importResult.AppendLine();
             }
 
-            importer.SetAssetBundleNameAndVariant(bundleTag, string.Empty);
-            importer.SaveAndReimport();
+            if (failed.Count > 0)
+            {
+                importResult.AppendLine("FAILED");
+                for (var i = 0; i < failed.Count; i++)
+                {
+                    if (i != 0)
+                    {
+                        importResult.Append(", ");
+                    }
+                    importResult.Append(failed[i]);
+                }
+            }
+
+            return importResult.ToString();
         }
     }
 }

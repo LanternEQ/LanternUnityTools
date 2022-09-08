@@ -1,6 +1,7 @@
 ﻿using System;
-using Lantern.Data;
-using Lantern.EQ;
+using Infrastructure.EQ.TextParser;
+using Lantern.EQ.Editor.Helpers;
+using Lantern.EQ.Lantern;
 using UnityEngine;
 
 namespace Lantern.Editor.Importers

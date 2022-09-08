@@ -1,10 +1,12 @@
-﻿namespace Lantern.EQ
+﻿using Lantern.EQ.Data;
+
+namespace Lantern.EQ.Sound
 {
     public class ModelSound
     {
         public int RaceId;
         public int VariantId;
-        public Gender GenderId;
+        public GenderId GenderId;
         public string Loop;
         public string Idle1;
         public string Idle2;
@@ -21,6 +23,6 @@
         public string Running;
         public string Attack;
         public string SAttack;
-        public string TAttack; 
+        public string TAttack;
     }
 }

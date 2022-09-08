@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Infrastructure.EQ.TextParser;
+using Lantern.EQ.Editor.Helpers;
 using UnityEditor;
 using UnityEngine;
 
@@ -56,10 +58,10 @@ namespace Lantern.Editor.Importers
             int cooldownNight = Convert.ToInt32(soundData[8]);
             int cooldownRandom = Convert.ToInt32(soundData[9]);
 
-            string dayClipPath = "Assets/Content/AssetsToBundle/Sound/" + clipNameDay + ".ogg";
+            string dayClipPath = PathHelper.GetAssetBundleContentPath()+ "Sound/" + clipNameDay + ".ogg";
             AudioClip dayClip = (AudioClip) AssetDatabase.LoadAssetAtPath(dayClipPath, typeof(AudioClip));
 
-            string nightClipPath = "Assets/Content/AssetsToBundle/Sound/" + clipNameNight + ".ogg";
+            string nightClipPath = PathHelper.GetAssetBundleContentPath()+ "Sound/" + clipNameNight + ".ogg";
             AudioClip nightClip = (AudioClip) AssetDatabase.LoadAssetAtPath(nightClipPath, typeof(AudioClip));
 
             if (dayClip == null && nightClip == null)
@@ -68,15 +70,15 @@ namespace Lantern.Editor.Importers
                 {
                     Debug.LogError("SoundImporter: Unable to load day clip: " + clipNameDay);
                 }
-                
+
                 if (clipNameNight != string.Empty)
                 {
                     Debug.LogError("SoundImporter: Unable to load night clip: " + clipNameNight);
                 }
-                
+
                 return;
             }
-            
+
             GameObject soundTrigger =
                 (GameObject) PrefabUtility.InstantiatePrefab(soundType == 0
                     ? sound2dTriggerPrefab

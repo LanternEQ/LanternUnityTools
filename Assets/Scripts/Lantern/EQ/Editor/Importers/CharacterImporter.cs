@@ -1,11 +1,15 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Lantern.Editor.Helpers;
-using Lantern.EQ;
+using Infrastructure.EQ.TextParser;
 using Lantern.EQ.Animation;
-using Lantern.Helpers;
-using Lantern.Logic;
+using Lantern.EQ.Characters;
+using Lantern.EQ.Data;
+using Lantern.EQ.Editor.Helpers;
+using Lantern.EQ.Equipment;
+using Lantern.EQ.Helpers;
+using Lantern.EQ.Lighting;
+using Lantern.EQ.Sound;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,8 +28,20 @@ namespace Lantern.Editor.Importers
         /// </summary>
         private static Dictionary<string, string> _animationModelSources;
 
+        /// <summary>
+        /// Data for the sounds each model uses
+        /// </summary>
         private static List<ModelSound> _modelSounds;
-        private static List<AnimationClip> _animations;
+
+        /// <summary>
+        /// Loaded animations, faster than finding them on disk
+        /// </summary>
+        private static Dictionary<string, AnimationClip> _animations;
+
+        /// <summary>
+        /// Unity relative paths to animation text files
+        /// </summary>
+        private static List<string> _animationPaths;
 
         [MenuItem("EQ/Import/Characters", false, 50)]
         public static void ShowImportDialog()
@@ -58,44 +74,75 @@ namespace Lantern.Editor.Importers
 
         private static void Import()
         {
+            LoadData();
             var startTime = EditorApplication.timeSinceStartup;
-            _modelSounds = RaceSoundsDataParser.GetModelSounds();
-            _animations = new List<AnimationClip>();
-            CreateModelAnimationLink();
             TextureHelper.CopyTextures(_zoneShortname, AssetImportType.Characters);
-            ActorStaticImporter.ImportList("characters", AssetImportType.Characters);
-            ActorSkeletalImporter.ImportList("characters", AssetImportType.Characters, PostProcess);
+            ActorStaticImporter.ImportList("characters", AssetImportType.Characters, PostProcess);
+            ActorSkeletalImporter.ImportList("characters", AssetImportType.Characters, PostProcessSkeletal);
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "Characters", "characters");
             EditorUtility.DisplayDialog("CharacterImport",
-                $"Character import finished in {(int) (EditorApplication.timeSinceStartup - startTime)} seconds", "OK");
+                $"Character import finished in {(int)(EditorApplication.timeSinceStartup - startTime)} seconds", "OK");
+            Cleanup();
+        }
+
+        private static void LoadData()
+        {
+            _modelSounds = RaceSoundsDataParser.GetModelSounds();
+            _animations = new Dictionary<string, AnimationClip>();
+            CreateModelAnimationLink();
+            _animationPaths = AnimationImporter.LoadAnimationPaths(_zoneShortname, AssetImportType.Characters);
+        }
+
+        private static void Cleanup()
+        {
+            _modelSounds.Clear();
+            _animations.Clear();
+            _modelSounds.Clear();
+            _animationPaths.Clear();
         }
 
         private static void PostProcess(GameObject obj)
         {
             string modelAsset = obj.name;
-            var skeleton = obj;
+            var characterModel = obj.AddComponent<CharacterModel>();
+
+            var lightSetter = obj.AddComponent<AmbientLightSetterDynamic>();
+            lightSetter.FindRenderers();
+
+            LoadCharacterSounds(obj, _modelSounds);
+
+            characterModel.SetReferences(null, null, null, lightSetter,
+                obj.GetComponent<CharacterSounds>(),
+                obj.GetComponent<CharacterAnimationLogic>());
+        }
+
+        private static void PostProcessSkeletal(GameObject skeleton)
+        {
+            string modelAsset = skeleton.name;
+            var characterModel = skeleton.AddComponent<CharacterModel>();
+
             VariantHandler variantHandler = null;
 
-            skeleton.AddComponent<UniversalAnimationController>();
+            var cac = skeleton.AddComponent<CharacterAnimationController>();
+            var cal = skeleton.AddComponent<CharacterAnimationLogic>();
+            cal.InitializeImport();
             var ap = skeleton.AddComponent<SkeletonAttachPoints>();
             ap.FindAttachPoints();
             var e3d = skeleton.AddComponent<Equipment3dHandler>();
             e3d.SetSkeletonAttachPoints(ap);
-            var animatedObject = skeleton.GetComponent<AnimatedObject>();
+
+            // TODO: Is this still needed?
+            var animatedObject = skeleton.GetComponent<ObjectAnimation>();
             DestroyImmediate(animatedObject);
 
             var animation = skeleton.GetComponent<Animation>();
-            string modelLink = GetAnimationModelLink(modelAsset);
-
-            AddModelAnimations(animation, modelAsset, modelLink);
-
-            skeleton.name = modelAsset;
 
             // Find all meshes for this model
             string path = _zoneShortname == "characters"
-                ? PathHelper.GetRootAssetPath() + "Characters"
-                : $"{PathHelper.GetRootAssetPath()}/{_zoneShortname}/Characters";
+                ? PathHelper.GetEqAssetPath() + "Characters"
+                : $"{PathHelper.GetEqAssetPath()}/{_zoneShortname}/Characters";
             string[] meshGuidPaths = AssetDatabase.FindAssets(modelAsset,
-                new[] {path});
+                new[] { path });
 
             if (meshGuidPaths == null || meshGuidPaths.Length == 0)
             {
@@ -104,73 +151,80 @@ namespace Lantern.Editor.Importers
             }
 
             // Find animations
-            string rootName = modelAsset;
             if (animation != null)
             {
-                GetAdditionalAnimations(animation, rootName, AssetImportType.Characters);
-                
-                if (_animationModelSources.ContainsKey(rootName))
+                LoadModelAnimations(animation, modelAsset, AssetImportType.Characters);
+
+                if (_animationModelSources.ContainsKey(modelAsset))
                 {
-                    GetAdditionalAnimations(animation, _animationModelSources[rootName], AssetImportType.Characters);
+                    LoadModelAnimations(animation, _animationModelSources[modelAsset], AssetImportType.Characters);
                 }
             }
 
-            GameObject lastPrimaryMesh = null;
+            // Initialize the animation controller
+            cac.InitializeImport();
 
             variantHandler = skeleton.GetComponent<VariantHandler>();
 
             if (RaceHelper.IsPlayableRace(modelAsset))
             {
                 FindEquipmentTextures(modelAsset, variantHandler);
-                FindAdditionalFaces(variantHandler.GetLastPrimaryMesh(), variantHandler);
+                FindAdditionalFaces(modelAsset, variantHandler.GetLastPrimaryMesh(), variantHandler);
             }
 
-            var vertexColorDebug = skeleton.AddComponent<SunlightSetterDynamic>();
-            vertexColorDebug.FindChildRenderers();
+            var vertexColorDebug = skeleton.AddComponent<AmbientLightSetterDynamic>();
+            vertexColorDebug.FindRenderers();
 
             LoadCharacterSounds(skeleton, _modelSounds);
+
+            characterModel.SetReferences(ap, variantHandler as Equipment2dHandler, e3d, vertexColorDebug,
+                skeleton.GetComponent<CharacterSounds>(),
+                skeleton.GetComponent<CharacterAnimationLogic>());
         }
 
-        public static void GetAdditionalAnimations(Animation animation, string animationBase, AssetImportType type)
+        private static void LoadModelAnimations(Animation animation, string animationBase, AssetImportType type)
         {
-            var searchPath = PathHelper.GetLoadPath(_zoneShortname, type) + "Animations";
-            var assets = AssetDatabase.FindAssets("t:textasset", new[] {searchPath});
+            string prefix = animationBase + "_";
 
-            foreach (var assetGuids in assets)
+            foreach (var path in _animationPaths)
             {
-                string realPath = AssetDatabase.GUIDToAssetPath(assetGuids);
-                string fileName = Path.GetFileNameWithoutExtension(realPath);
+                string fileName = Path.GetFileNameWithoutExtension(path);
 
-                if (!fileName.StartsWith(animationBase + "_"))
-                {
-                    continue;
-                }
-                
-                // Try and find the animation first
-                var existingPath = PathHelper.GetSavePath(_zoneShortname, type) + "Animations/" + fileName + ".anim";
-                var animClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(existingPath);
-                if (animClip != null)
-                {
-                    animation.AddClip(animClip, animClip.name);
-                    continue;
-                }
-                    
-                string text;
-                if (!ImportHelper.LoadTextAsset(realPath, out text))
+                if (!fileName.StartsWith(prefix))
                 {
                     continue;
                 }
 
-                var ta = new TextAsset(text);
-                var newClip = AnimationImporter.ImportAnimation(ta, animationBase, fileName.Split('_')[1], true);
-                animation.AddClip(newClip, newClip.name);
+                var animClip = AnimationImporter.GetAnimationClip(_zoneShortname, fileName, path, animationBase, type,
+                    ref _animations);
 
-                string savePath = PathHelper.GetSavePath(_zoneShortname, type) +
-                                  "Animations/";
-                string folderPath = PathHelper.GetSystemPathFromUnity(savePath);
-                Directory.CreateDirectory(folderPath);
+                if (animClip == null)
+                {
+                    Debug.LogError("Unable to import animation: " + fileName);
+                }
 
-                AssetDatabase.CreateAsset(newClip, savePath + $"{newClip.name}.anim");
+                animation.AddClip(animClip, animClip.name);
+
+                if (type == AssetImportType.Characters)
+                {
+                    if (!AnimationHelper.TrySplitAnimationName(fileName, out _, out var at))
+                    {
+                        continue;
+                    }
+
+                    if (!AnimationHelper.IsReverseAnimationNeeded(at))
+                    {
+                        continue;
+                    }
+
+                    animClip = AnimationImporter.GetAnimationClip(_zoneShortname, fileName, path, animationBase, type,
+                        ref _animations, true);
+
+                    if (animClip != null)
+                    {
+                        animation.AddClip(animClip, animClip.name);
+                    }
+                }
             }
         }
 
@@ -243,6 +297,11 @@ namespace Lantern.Editor.Importers
 
             for (int i = 0; i < materials.Length; i++)
             {
+                if (materials[i] == null)
+                {
+                    continue;
+                }
+
                 textures[i] = TextureHelper.FindEquipmentVariant(materials[i].GetTexture("_BaseMap"), textureIndex,
                     requiredString);
             }
@@ -255,7 +314,7 @@ namespace Lantern.Editor.Importers
             handler.SetEquipmentTextures(mesh, armorIndex, textures);
         }
 
-        private static void FindAdditionalFaces(GameObject lastPrimaryMesh,
+        private static void FindAdditionalFaces(string modelName, GameObject lastPrimaryMesh,
             VariantHandler nonPlayableVariantHandler)
         {
             if (lastPrimaryMesh == null)
@@ -278,6 +337,11 @@ namespace Lantern.Editor.Importers
 
             for (int i = 0; i < sharedMaterials.Length; i++)
             {
+                if (sharedMaterials[i] == null)
+                {
+                    continue;
+                }
+
                 firstMaterials[i] = sharedMaterials[i].GetTexture("_BaseMap");
             }
 
@@ -291,7 +355,7 @@ namespace Lantern.Editor.Importers
                 Texture[] newFace = new Texture[textureCount];
                 for (int i = 0; i < firstMaterials.Length; i++)
                 {
-                    Texture variant = TextureHelper.FindFaceVariant(firstMaterials[i], index);
+                    Texture variant = TextureHelper.FindFaceVariant(modelName, firstMaterials[i], index);
 
                     if (variant != null)
                     {
@@ -316,7 +380,6 @@ namespace Lantern.Editor.Importers
         private static void LoadCharacterSounds(GameObject skeleton, List<ModelSound> soundData)
         {
             // Sound script is added regardless
-            var soundScript = skeleton.AddComponent<CharacterSounds>();
             string modelName = skeleton.name;
             int? raceId = RaceHelper.GetRaceIdFromModelName(skeleton.name);
 
@@ -325,18 +388,24 @@ namespace Lantern.Editor.Importers
                 return;
             }
 
+            CharacterSoundsBase soundBaseScript = null;
+
             List<ModelSound> validSounds = GetAllSoundsForRace(raceId.Value, soundData);
 
             if (validSounds.Count == 0)
             {
-                Debug.LogError("No race sound found for: " + modelName);
+                soundBaseScript = skeleton.AddComponent<CharacterSoundsBaseEmpty>();
                 return;
+            }
+            else
+            {
+                soundBaseScript = skeleton.AddComponent<CharacterSounds>();
             }
 
             // Handle gender variants
             if (validSounds.Count > 1)
             {
-                Gender? gender = RaceHelper.GetRaceGenderFromModelName(modelName.ToUpper());
+                GenderId? gender = RaceHelper.GetRaceGenderFromModelName(modelName.ToUpper());
 
                 if (!gender.HasValue)
                 {
@@ -365,127 +434,141 @@ namespace Lantern.Editor.Importers
 
             foreach (var validSound in validSounds)
             {
-                AddSoundToCharacterSounds(validSound.Attack, CharacterSoundType.Attack, soundScript,
+                AddSoundToCharacterSounds(validSound.Attack, CharacterSoundType.Attack, soundBaseScript,
                     validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.GetHit1, CharacterSoundType.GetHit, soundScript,
+                AddSoundToCharacterSounds(validSound.GetHit1, CharacterSoundType.GetHit, soundBaseScript,
                     validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.GetHit2, CharacterSoundType.GetHit, soundScript,
+                AddSoundToCharacterSounds(validSound.GetHit2, CharacterSoundType.GetHit, soundBaseScript,
                     validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.GetHit3, CharacterSoundType.GetHit, soundScript,
+                AddSoundToCharacterSounds(validSound.GetHit3, CharacterSoundType.GetHit, soundBaseScript,
                     validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.GetHit4, CharacterSoundType.GetHit, soundScript,
+                AddSoundToCharacterSounds(validSound.GetHit4, CharacterSoundType.GetHit, soundBaseScript,
                     validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Death, CharacterSoundType.Death, soundScript,
+                AddSoundToCharacterSounds(validSound.Death, CharacterSoundType.Death, soundBaseScript,
                     validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Drown, CharacterSoundType.Drown, soundScript,
+                AddSoundToCharacterSounds(validSound.Drown, CharacterSoundType.Drown, soundBaseScript,
                     validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Idle1, CharacterSoundType.Idle, soundScript, validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Idle2, CharacterSoundType.Idle, soundScript, validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Loop, CharacterSoundType.Loop, soundScript, validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Walking, CharacterSoundType.Walking, soundScript,
+                AddSoundToCharacterSounds(validSound.Idle1, CharacterSoundType.Idle, soundBaseScript,
                     validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Running, CharacterSoundType.Running, soundScript,
+                AddSoundToCharacterSounds(validSound.Idle2, CharacterSoundType.Idle, soundBaseScript,
                     validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Jump, CharacterSoundType.Jump, soundScript, validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.SAttack, CharacterSoundType.SAttack, soundScript,
+                AddSoundToCharacterSounds(validSound.Loop, CharacterSoundType.Loop, soundBaseScript,
                     validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.TAttack, CharacterSoundType.TAttack, soundScript,
+                AddSoundToCharacterSounds(validSound.Walking, CharacterSoundType.Walking, soundBaseScript,
+                    validSound.VariantId);
+                AddSoundToCharacterSounds(validSound.Running, CharacterSoundType.Running, soundBaseScript,
+                    validSound.VariantId);
+                AddSoundToCharacterSounds(validSound.Jump, CharacterSoundType.Jump, soundBaseScript,
+                    validSound.VariantId);
+                AddSoundToCharacterSounds(validSound.SAttack, CharacterSoundType.SAttack, soundBaseScript,
+                    validSound.VariantId);
+                AddSoundToCharacterSounds(validSound.TAttack, CharacterSoundType.TAttack, soundBaseScript,
                     validSound.VariantId);
 
                 // Sitting test
-                UniversalAnimationController animations = skeleton.GetComponent<UniversalAnimationController>();
-                if (animations.HasAnimation("p02"))
+                CharacterAnimationController animationsController =
+                    skeleton.GetComponent<CharacterAnimationController>();
+
+                if (animationsController == null)
+                {
+                    return;
+                }
+
+                if (animationsController.HasAnimation("p02"))
                 {
                     string sittingSound = modelName.ToLower() == "ske" ? "Skel_Std.wav" : "StepCrch.WAV";
-                    AddSoundToCharacterSounds(sittingSound, CharacterSoundType.Sit, soundScript, validSound.VariantId);
+                    AddSoundToCharacterSounds(sittingSound, CharacterSoundType.Sit, soundBaseScript,
+                        validSound.VariantId);
                 }
 
                 // Crouch walk
-                if (animations.HasAnimation("l06"))
+                if (animationsController.HasAnimation("l06"))
                 {
-                    AddSoundToCharacterSounds("StepCrch.WAV", CharacterSoundType.Crouch, soundScript,
+                    AddSoundToCharacterSounds("StepCrch.WAV", CharacterSoundType.Crouch, soundBaseScript,
                         validSound.VariantId);
                 }
 
                 // Treading swim
-                if (animations.HasAnimation("l09"))
+                if (animationsController.HasAnimation("l09"))
                 {
-                    AddSoundToCharacterSounds("WatTrd_1.WAV", CharacterSoundType.Treading, soundScript,
+                    AddSoundToCharacterSounds("WatTrd_1.WAV", CharacterSoundType.Treading, soundBaseScript,
                         validSound.VariantId);
                 }
 
                 // Moving swim
-                if (animations.HasAnimation("p06"))
+                if (animationsController.HasAnimation("p06"))
                 {
-                    AddSoundToCharacterSounds("WatTrd_2.WAV", CharacterSoundType.Swim, soundScript,
+                    AddSoundToCharacterSounds("WatTrd_2.WAV", CharacterSoundType.Swim, soundBaseScript,
                         validSound.VariantId);
                 }
 
                 // Kneel
-                if (animations.HasAnimation("p05"))
+                if (animationsController.HasAnimation("p05"))
                 {
-                    AddSoundToCharacterSounds("StepCrch.WAV", CharacterSoundType.Kneel, soundScript,
+                    AddSoundToCharacterSounds("StepCrch.WAV", CharacterSoundType.Kneel, soundBaseScript,
                         validSound.VariantId);
                 }
 
                 // Kick
-                if (animations.HasAnimation("c01"))
+                if (animationsController.HasAnimation("c01"))
                 {
-                    AddSoundToCharacterSounds("Kick1.WAV", CharacterSoundType.Kick, soundScript, validSound.VariantId);
+                    AddSoundToCharacterSounds("Kick1.WAV", CharacterSoundType.Kick, soundBaseScript,
+                        validSound.VariantId);
                 }
 
                 // Pierce
-                if (animations.HasAnimation("c02"))
+                if (animationsController.HasAnimation("c02"))
                 {
-                    AddSoundToCharacterSounds("Stab.WAV", CharacterSoundType.Pierce, soundScript, validSound.VariantId);
+                    AddSoundToCharacterSounds("Stab.WAV", CharacterSoundType.Pierce, soundBaseScript,
+                        validSound.VariantId);
                 }
 
                 // 2H slash
-                if (animations.HasAnimation("c03"))
+                if (animationsController.HasAnimation("c03"))
                 {
-                    AddSoundToCharacterSounds("SwingBig.WAV", CharacterSoundType.TwoHandSlash, soundScript,
+                    AddSoundToCharacterSounds("SwingBig.WAV", CharacterSoundType.TwoHandSlash, soundBaseScript,
                         validSound.VariantId);
                 }
 
                 // 2H blunt
-                if (animations.HasAnimation("c04"))
+                if (animationsController.HasAnimation("c04"))
                 {
-                    AddSoundToCharacterSounds("Impale.WAV", CharacterSoundType.TwoHandBlunt, soundScript,
+                    AddSoundToCharacterSounds("Impale.WAV", CharacterSoundType.TwoHandBlunt, soundBaseScript,
                         validSound.VariantId);
                 }
 
                 // Bash?
-                if (animations.HasAnimation("c07"))
+                if (animationsController.HasAnimation("c07"))
                 {
-                    AddSoundToCharacterSounds("BashShld.WAV", CharacterSoundType.Bash, soundScript,
+                    AddSoundToCharacterSounds("BashShld.WAV", CharacterSoundType.Bash, soundBaseScript,
                         validSound.VariantId);
                 }
 
                 // Archery
-                if (animations.HasAnimation("c09"))
+                if (animationsController.HasAnimation("c09"))
                 {
-                    AddSoundToCharacterSounds("BowDraw.WAV", CharacterSoundType.Archery, soundScript,
+                    AddSoundToCharacterSounds("BowDraw.WAV", CharacterSoundType.Archery, soundBaseScript,
                         validSound.VariantId);
                 }
 
                 // Flying kick
-                if (animations.HasAnimation("t07"))
+                if (animationsController.HasAnimation("t07"))
                 {
-                    AddSoundToCharacterSounds("RndKick.WAV", CharacterSoundType.FlyingKick, soundScript,
+                    AddSoundToCharacterSounds("RndKick.WAV", CharacterSoundType.FlyingKick, soundBaseScript,
                         validSound.VariantId);
                 }
 
                 // Rapid punch
-                if (animations.HasAnimation("t08"))
+                if (animationsController.HasAnimation("t08"))
                 {
-                    AddSoundToCharacterSounds("Punch1.WAV", CharacterSoundType.RapidPunch, soundScript,
+                    AddSoundToCharacterSounds("Punch1.WAV", CharacterSoundType.RapidPunch, soundBaseScript,
                         validSound.VariantId);
                 }
 
                 // Large punch
-                if (animations.HasAnimation("t09"))
+                if (animationsController.HasAnimation("t09"))
                 {
-                    AddSoundToCharacterSounds("Punch1.WAV", CharacterSoundType.LargePunch, soundScript,
+                    AddSoundToCharacterSounds("Punch1.WAV", CharacterSoundType.LargePunch, soundBaseScript,
                         validSound.VariantId);
                 }
             }
@@ -509,7 +592,7 @@ namespace Lantern.Editor.Importers
         }
 
         private static void AddSoundToCharacterSounds(string soundName, CharacterSoundType characterSoundType,
-            CharacterSounds soundScript, int variant)
+            CharacterSoundsBase soundBaseScript, int variant)
         {
             if (string.IsNullOrEmpty(soundName))
             {
@@ -524,58 +607,12 @@ namespace Lantern.Editor.Importers
             string realSoundId = soundName.ToLower().Substring(0, soundName.Length - 3) + "ogg";
 
             AudioClip soundClip =
-                AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Content/AssetsToBundle/Sound/" + realSoundId);
+                AssetDatabase.LoadAssetAtPath<AudioClip>(PathHelper.GetAssetBundleContentPath()+ "Sound/" + realSoundId);
 
             if (soundClip != null)
             {
-                soundScript.AddSoundClip(characterSoundType, soundClip, variant);
+                soundBaseScript.AddSoundClip(characterSoundType, soundClip, variant);
             }
-        }
-
-        private static void AddModelAnimations(Animation animation, string modelAsset, string modelLink)
-        {
-            // Loop through the first time to find animations that match the model name
-            foreach (AnimationClip clips in _animations)
-            {
-                if (!clips.name.StartsWith(modelAsset))
-                {
-                    continue;
-                }
-
-                animation.AddClip(clips, clips.name);
-            }
-
-            if (modelLink != string.Empty)
-            {
-                foreach (AnimationClip clips in _animations)
-                {
-                    if (!clips.name.StartsWith(modelLink))
-                    {
-                        continue;
-                    }
-
-                    // Do not add the same animation prefix if it already exists
-                    if (DoesAnimationContainSameBaseAnimation(animation, clips.name))
-                    {
-                        continue;
-                    }
-
-                    animation.AddClip(clips, clips.name);
-                }
-            }
-        }
-
-        private static bool DoesAnimationContainSameBaseAnimation(Animation animation, string clipName)
-        {
-            foreach (AnimationState anim in animation)
-            {
-                if (anim.clip.name.Split('_')[1] == clipName.Split('_')[1])
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private static void CreateModelAnimationLink()
@@ -583,7 +620,7 @@ namespace Lantern.Editor.Importers
             _animationModelSources = new Dictionary<string, string>();
             var pathToModelInfo = PathHelper.GetClientDataPath() + "/animationsources.txt";
             var textLines = File.ReadAllText(pathToModelInfo);
-            
+
             if (textLines.Length == 0)
             {
                 Debug.LogError($"CharacterImporter: Could not find animation sources at path: {pathToModelInfo}");
@@ -601,18 +638,6 @@ namespace Lantern.Editor.Importers
 
                 _animationModelSources[line[0].ToLower()] = line[1].ToLower();
             }
-        }
-
-        private static string GetAnimationModelLink(string modelName)
-        {
-            string link = modelName;
-            if (_animationModelSources.ContainsKey(modelName) &&
-                !string.IsNullOrEmpty(_animationModelSources[modelName]))
-            {
-                return _animationModelSources[modelName];
-            }
-
-            return link;
         }
     }
 }

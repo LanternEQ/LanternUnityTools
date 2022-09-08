@@ -1,14 +1,13 @@
-namespace Lantern
+namespace Lantern.EQ.Equipment
 {
     public enum Equipment2dSlot
     {
-        None,
-        Chest,
-        Leg,
-        Hand,
-        UpperArm,
-        Foot,
-        Forearm,
-        Head
+        Chest = 0,
+        Leg = 1,
+        Hand = 2,
+        UpperArm = 3,
+        Foot = 4,
+        Forearm = 5,
+        Head = 6
     }
 }

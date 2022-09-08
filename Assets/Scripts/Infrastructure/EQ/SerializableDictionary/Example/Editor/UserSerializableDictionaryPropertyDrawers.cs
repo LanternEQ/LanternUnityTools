@@ -1,6 +1,10 @@
 ﻿#if UNITY_EDITOR
+using Infrastructure.EQ.SerializableDictionary.Editor;
 using UnityEditor;
 
-[CustomPropertyDrawer(typeof(StringStringDictionary))]
-public class AnySerializableDictionaryPropertyDrawer : SerializableDictionaryPropertyDrawer {}
+namespace Infrastructure.EQ.SerializableDictionary.Example.Editor
+{
+    [CustomPropertyDrawer(typeof(StringStringDictionary))]
+    public class AnySerializableDictionaryPropertyDrawer : SerializableDictionaryPropertyDrawer {}
+}
 #endif

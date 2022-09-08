@@ -1,22 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using Lantern.Editor.Importers;
+using Lantern.EQ.Editor.Helpers;
+using Lantern.EQ.Environment;
+using Lantern.EQ.Helpers;
 using UnityEditor;
 using UnityEngine;
 
-namespace Lantern.Editor.Importers
+namespace Lantern.EQ.Editor.Importers
 {
     public static class SkyImporter
     {
-        private static GameObject _skyObject;
-
-        private static Transform _sky1Root;
-        private static Transform _sky2Root;
-        
-        private static Transform _sky1ObjectRoot;
-        private static Transform _sky2ObjectRoot;
-
-        private static Animation _sky1Animation;
-        private static Animation _sky2Animation;
-
         [MenuItem("EQ/Import/Sky", false, 50)]
         public static void ImportSky()
         {
@@ -25,185 +19,122 @@ namespace Lantern.Editor.Importers
             {
                 return;
             }
-            
-            CreateSkyMaterials();
-            CreateSkyMeshes();
-            CreateSkySkeletonAndAnimation("layer12");
-            CreateSkySkeletonAndAnimation("layer32");
-            CreateHierarchy();
-        }
 
-        private static void CreateHierarchy()
-        {
-            /*GameObject root = new GameObject("ZoneEnvironment");
-            //root.transform.localScale = new Vector3(100000f, 100000f, 100000f);
-            var skyController = root.AddComponent<SkyController>();
-            root.AddComponent<FogController>();
-            root.AddComponent<WorldLightController>();
+            var startTime = EditorApplication.timeSinceStartup;
 
-            var skyGroup1Root = InstantiateSkyPrefab("layer12", root);
-            skyGroup1Root.name = "Root1";
-
-            // Sky 1
-            var sky1Parent = new GameObject("Sky1");
-            sky1Parent.transform.parent = skyGroup1Root.transform;
-            var sky1SkyLayer = InstantiateSkyPrefab("layer11", sky1Parent);
-            var sky1CloudLayer = InstantiateSkyPrefab("layer13", sky1Parent);
-
-            // Sky 2
-            var sky2Parent = new GameObject("Sky2");
-            sky2Parent.transform.parent = skyGroup1Root.transform;
-            var sky2SkyLayer = InstantiateSkyPrefab("layer21", sky2Parent);
-            var sky2CloudLayer = InstantiateSkyPrefab("layer23", sky2Parent);
-
-            // Sky 4
-            var sky4Parent = new GameObject("Sky4");
-            sky4Parent.transform.parent = skyGroup1Root.transform;
-            var sky4SkyLayer = InstantiateSkyPrefab("layer41", sky4Parent);
-            var sky4CloudLayer = InstantiateSkyPrefab("layer43", sky4Parent);
-            
-            // Sky 5
-            var sky5Parent = new GameObject("Sky5");
-            sky5Parent.transform.parent = skyGroup1Root.transform;
-            var sky5SkyLayer = InstantiateSkyPrefab("layer51", sky5Parent);
-            var sky5CloudLayer = InstantiateSkyPrefab("layer53", sky5Parent);
-            
-            var skyGroup2Root = InstantiateSkyPrefab("layer32", root);
-            skyGroup2Root.name = "Root2";
-            
-            // Sky 3
-            var sky3Parent = new GameObject("Sky3");
-            sky3Parent.transform.parent = skyGroup2Root.transform;
-            var sky3SkyLayer = InstantiateSkyPrefab("layer31", sky3Parent);
-            var sky3CloudLayer = InstantiateSkyPrefab("layer33", sky3Parent);
-            
-            skyController.AddSkyRoot(skyGroup1Root.transform);
-            skyController.AddSkyRoot(skyGroup2Root.transform);
-
-            var root1Objects = skyGroup1Root.transform.GetChild(0).gameObject;
-            var root2Objects = skyGroup2Root.transform.GetChild(0).gameObject;
-
-            var root1Animation = root1Objects.GetComponent<Animation>();
-            var root2Animation = root2Objects.GetComponent<Animation>();
-            root1Animation.playAutomatically = false;
-            root2Animation.playAutomatically = false;
-            
-            root1Objects.name = root2Objects.name = "Objects";
-            
-            skyController.SetObjectPool(new List<GameObject>
+            var meshesToCreate = new List<string>
             {
-                sky1Parent, sky2Parent, sky3Parent, sky4Parent, sky5Parent, root1Objects, root2Objects
-            });
+                "layer11",
+                "layer13",
+                "layer21",
+                "layer23",
+                "layer31",
+                "layer33",
+                "layer41",
+                "layer43",
+                "layer51",
+                "layer53",
+                "moon",
+                "moon31",
+                "moon32",
+                "moon33",
+                "moon34",
+                "moon35",
+                "sun",
+            };
 
-            skyController.AddSkyGroup(new List<GameObject>(),null);
-            skyController.AddSkyGroup(new List<GameObject> {root1Objects, sky1Parent},
-                root1Animation);
-            skyController.AddSkyGroup(new List<GameObject> {root1Objects, sky2Parent},
-                root1Animation);
-            skyController.AddSkyGroup(new List<GameObject> {root2Objects, sky3Parent},
-                root2Animation);
-            skyController.AddSkyGroup(new List<GameObject> {root1Objects, sky4Parent},
-                root1Animation);
-            skyController.AddSkyGroup(new List<GameObject> {root1Objects, sky5Parent},
-                root1Animation);
-
-            SetupLayerPanningLogic(new List<GameObject>
+            foreach (var mtc in meshesToCreate)
             {
-                sky1CloudLayer,
-                sky1SkyLayer,
-                sky2CloudLayer,
-                sky2SkyLayer,
-                sky3CloudLayer,
-                sky3SkyLayer,
-                sky4CloudLayer,
-                sky4SkyLayer,
-                sky5CloudLayer,
-                sky5SkyLayer,
-            });
-            
-            root.transform.localScale = new Vector3(100f, 100f, 100f);*/
-        }
-
-        private static GameObject InstantiateSkyPrefab(string layer12, GameObject root)
-        {
-            var skeleton1 =
-                AssetDatabase.LoadAssetAtPath<GameObject>(PathHelper.GetSavePath("sky", AssetImportType.Sky) +
-                                                          layer12 + ".prefab");
-            
-            return PrefabUtility.InstantiatePrefab(skeleton1, root.transform) as GameObject;
-        }
-
-        private static void CreateSkySkeletonAndAnimation(string skeletonName)
-        {
-            var pathToSkeleton = $"Assets/ZoneAssets/Classic/sky/Animations/{skeletonName}_POS.txt";
-            var pathToAnimation = $"Assets/ZoneAssets/Classic/sky/Skeletons/{skeletonName}.txt";
-
-            var defaultAnim = AnimationImporter.CreateDefaultAnimations(skeletonName, pathToSkeleton, AssetImportType.Sky, "sky", false);
-
-            if (defaultAnim == null)
-            {
-                return;
-            }
-            
-            List<string> skeletalMeshes = new List<string>();
-
-            /*GameObject skeleton =
-                SkeletonImporter.Import(skeletonName, "sky",AssetImportType.Sky);
-            
-            PrefabUtility.SaveAsPrefabAsset(skeleton, PathHelper.GetSavePath("sky", 
-                AssetImportType.Sky) + skeletonName + ".prefab");
-
-            // Destroy
-            GameObject.DestroyImmediate(skeleton);*/
-        }
-
-        private static void CreateSkyMaterials()
-        {
-            MaterialImporter.CreateMaterials("sky", AssetImportType.Sky, null);
-        }
-
-        private static void CreateSkyMeshes()
-        {
-            var meshListPath = PathHelper.GetLoadPath("sky", AssetImportType.Sky) + "meshes.txt";
-
-            string meshListAsset = string.Empty;
-            if(!ImportHelper.LoadTextAsset(meshListPath, out meshListAsset))
-            {
-                Debug.LogError("Unable to load sky mesh list at path:  " + meshListPath);
-                return;
+                ActorStaticImporter.Import("sky", mtc, AssetImportType.Sky);
             }
 
-            var meshLines = TextParser.ParseTextByNewline(meshListAsset);
+            // Assembly
+            var root = new GameObject("Sky");
+            var group1 = GameObjectHelper.CreateNewGameObjectAsChild("Group1", root);
+            var group2 = GameObjectHelper.CreateNewGameObjectAsChild("Group2", root);
+            var group1Objects = GameObjectHelper.CreateNewGameObjectAsChild("Objects", group1);
+            var group2Objects = GameObjectHelper.CreateNewGameObjectAsChild("Objects", group2);
+            var sky1 = GameObjectHelper.CreateNewGameObjectAsChild("Sky1", group1);
+            var sky2 = GameObjectHelper.CreateNewGameObjectAsChild("Sky2", group1);
+            var sky3 = GameObjectHelper.CreateNewGameObjectAsChild("Sky3", group2);
+            var sky4 = GameObjectHelper.CreateNewGameObjectAsChild("Sky4", group1);
+            var sky5 = GameObjectHelper.CreateNewGameObjectAsChild("Sky5", group1);
+            var layer12 = GameObjectHelper.CreateNewGameObjectAsChild("root", group1Objects);
+            var layer32 = GameObjectHelper.CreateNewGameObjectAsChild("root", group2Objects);
+            InstantiateSkyPrefabAsChild("moon", layer12);
+            InstantiateSkyPrefabAsChild("sun", layer12);
+            InstantiateSkyPrefabAsChild("moon35", layer32);
+            InstantiateSkyPrefabAsChild("moon33", layer32);
+            InstantiateSkyPrefabAsChild("moon31", layer32);
+            InstantiateSkyPrefabAsChild("moon32", layer32);
+            InstantiateSkyPrefabAsChild("moon34", layer32);
+            var layer11 = InstantiateSkyPrefabAsChild("layer11", sky1);
+            var layer13 = InstantiateSkyPrefabAsChild("layer13", sky1);
+            var layer21 = InstantiateSkyPrefabAsChild("layer21", sky2);
+            var layer23 = InstantiateSkyPrefabAsChild("layer23", sky2);
+            var layer31 = InstantiateSkyPrefabAsChild("layer31", sky3);
+            var layer33 = InstantiateSkyPrefabAsChild("layer33", sky3);
+            var layer41 = InstantiateSkyPrefabAsChild("layer41", sky4);
+            var layer43 = InstantiateSkyPrefabAsChild("layer43", sky4);
+            var layer51 = InstantiateSkyPrefabAsChild("layer51", sky5);
+            var layer53 = InstantiateSkyPrefabAsChild("layer53", sky5);
 
-            foreach (var meshName in meshLines)
-            {
-                List<Material[]> moose = null;
-            }
+            // Animations
+            var group1Anim = group1Objects.AddComponent<UnityEngine.Animation>();
+            var group2Anim = group2Objects.AddComponent<UnityEngine.Animation>();
+            var path = Path.Combine(PathHelper.GetEqAssetPath(), "Sky/Animations/");
+            var clip1 = AnimationImporter.CreateDefaultAnimations("layer12", Path.Combine(path, $"layer12_pos.txt"),
+                AssetImportType.Sky, "sky", false);
+            var clip2 = AnimationImporter.CreateDefaultAnimations("layer32", Path.Combine(path, $"layer32_pos.txt"),
+                AssetImportType.Sky, "sky", false);
+            group1Anim.clip = clip1;
+            group2Anim.clip = clip2;
+            group1Anim.wrapMode = group2Anim.wrapMode = WrapMode.Loop;
+            group1Anim.playAutomatically = group2Anim.playAutomatically = false;
+
+            // Controller script
+            var sc = root.AddComponent<SkyController>();
+            sc.AddSkyGroup(new List<GameObject>(), null);
+            sc.AddSkyGroup(new List<GameObject> { sky1, group1 }, group1Anim);
+            sc.AddSkyGroup(new List<GameObject> { sky2, group1 }, group1Anim);
+            sc.AddSkyGroup(new List<GameObject> { sky3, group2 }, group2Anim);
+            sc.AddSkyGroup(new List<GameObject> { sky4, group1 }, group1Anim);
+            sc.AddSkyGroup(new List<GameObject> { sky5, group1 }, group1Anim);
+
+            // Layer movement
+            layer11.AddComponent<SkyLayer>().SetSkyLayerData(new Vector2(-0.008333333f, 0f), SkyLayer.SkyLayerType.SkyLayer);
+            layer13.AddComponent<SkyLayer>().SetSkyLayerData(new Vector2(-0.05f, 0f), SkyLayer.SkyLayerType.CloudLayer);
+            layer21.AddComponent<SkyLayer>().SetSkyLayerData(new Vector2(-0.008333333f, 0f), SkyLayer.SkyLayerType.SkyLayer);
+            layer23.AddComponent<SkyLayer>().SetSkyLayerData(new Vector2(-0.025f, 0f), SkyLayer.SkyLayerType.CloudLayer);
+            layer31.AddComponent<SkyLayer>().SetSkyLayerData(new Vector2(-0.025f, 0f), SkyLayer.SkyLayerType.SkyLayer);
+            layer33.AddComponent<SkyLayer>().SetSkyLayerData(new Vector2(-0.05f, 0f), SkyLayer.SkyLayerType.CloudLayer);
+            layer41.AddComponent<SkyLayer>().SetSkyLayerData(new Vector2(-0.008333333f, 0f), SkyLayer.SkyLayerType.SkyLayer);
+            layer43.AddComponent<SkyLayer>().SetSkyLayerData(new Vector2(-0.025f, 0f), SkyLayer.SkyLayerType.CloudLayer);
+            layer51.AddComponent<SkyLayer>().SetSkyLayerData(new Vector2(-0.025f, 0f), SkyLayer.SkyLayerType.SkyLayer);
+            layer53.AddComponent<SkyLayer>().SetSkyLayerData(new Vector2(-0.05f, 0f), SkyLayer.SkyLayerType.CloudLayer);
+
+            var savePath = Path.Combine(PathHelper.GetAssetBundleContentPath(), "Sky/Sky.prefab");
+            PrefabUtility.SaveAsPrefabAsset(root, savePath);
+            AssetDatabase.Refresh();
+            Object.DestroyImmediate(root);
+
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "Sky", "sky");
+            EditorUtility.DisplayDialog("SkyImport",
+                $"Sky import finished in {(int)(EditorApplication.timeSinceStartup - startTime)} seconds", "OK");
         }
 
-        private static void SetupLayerPanningLogic(List<GameObject> objects)
+        private static GameObject InstantiateSkyPrefabAsChild(string prefabName, GameObject parent)
         {
-           /* foreach(GameObject child in objects)
-            {
-                SkydomeLayer layer = child.gameObject.AddComponent<SkydomeLayer>();
-                float xPan = 0.0f;
-                float yPan = 0.0f;
+            var prefabPath = Path.Combine(PathHelper.GetAssetBundleContentPath(), $"Sky/{prefabName}.prefab");
+            var asset = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
 
-                if (child.name == "layer11" || child.name == "layer21" || child.name == "layer41")
-                {
-                    xPan = -0.008333333f;
-                }
-                if (child.name == "layer13" || child.name == "layer53" || child.name == "layer33")
-                {
-                    xPan = -0.05f;
-                }
-                if (child.name == "layer23" || child.name == "layer43" || child.name == "layer51" || child.name == "layer31")
-                {
-                    xPan = -0.025f;
-                }
-                
-                layer.SetUvPanSpeed(new Vector2(xPan, yPan));
-            }*/
+            if (asset == null)
+            {
+                Debug.LogError("Unable to load prefab at path: " + prefabPath);
+                return null;
+            }
+
+            return PrefabUtility.InstantiatePrefab(asset, parent.transform) as GameObject;
         }
     }
 }

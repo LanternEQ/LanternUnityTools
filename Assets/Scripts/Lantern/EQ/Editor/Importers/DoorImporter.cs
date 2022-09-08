@@ -8,7 +8,7 @@
             {
                 return;
             }
-            
+
             var doorService = ServiceFactory.Get<DoorService>();
 
             if (doorService == null)
@@ -47,7 +47,7 @@
                                    door.name + ".obj");
                     continue;
                 }
-                
+
                 GameObject spawnedDoor = (GameObject) PrefabUtility.InstantiatePrefab(loadedDoor, doorRoot.transform);
 
                 spawnedDoor.layer = LanternLayers.Door;
@@ -61,13 +61,13 @@
 
                 spawnedDoor.transform.rotation =
                     Quaternion.Euler(0.0f, RotationHelper.GetEqToLanternRotation(-door.heading), 0.0f);
-                
+
                 DoorId doorScript = spawnedDoor.AddComponent<DoorId>();
                 doorScript.Id = door.id;
 
                 spawnedDoor.tag = "Clickable";
 
-                ClickableDoor cd = spawnedDoor.AddComponent<ClickableDoor>();                
+                ClickableDoor cd = spawnedDoor.AddComponent<ClickableDoor>();
                 cd.SetLockPick(door.lockpick);
                 cd.SetKeyItem(door.keyitem);
                 cd.SetTriggerDoor(door.triggerdoor);
