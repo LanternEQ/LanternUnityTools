@@ -187,7 +187,7 @@ Shader "EQNew/EQUnlit"
             #pragma multi_compile_fog
             #pragma multi_compile_instancing
 
-            #include "EqUnlitInput.hlsl"
+            #include "EQUnlitInput.hlsl"
 
             struct Attributes
             {
