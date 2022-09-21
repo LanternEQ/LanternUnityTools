@@ -1,4 +1,4 @@
-Shader "EQ/Sky"
+Shader "EQ/EQSky"
 {
     Properties
     {

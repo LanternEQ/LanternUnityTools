@@ -1,4 +1,4 @@
-Shader "EQ/Invisible"
+Shader "EQ/EQInvisible"
 {
     Properties
     {

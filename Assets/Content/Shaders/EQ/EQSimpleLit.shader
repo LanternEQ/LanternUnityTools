@@ -1,5 +1,5 @@
 // Shader targeted for low end devices. Single Pass Forward Rendering.
-Shader "EQNew/EQSimpleLit"
+Shader "EQ/EQSimpleLit"
 {
     // Keep properties of StandardSpecular shader for upgrade reasons.
     Properties
@@ -51,7 +51,7 @@ Shader "EQNew/EQSimpleLit"
 
     SubShader
     {
-        Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalPipeline" "UniversalMaterialType" = "SimpleLit" "IgnoreProjector" = "True" "ShaderModel"="4.5"}
+        Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalPipeline" "UniversalMaterialType" = "SimpleLit" "IgnoreProjector" = "True" "ShaderModel"="2.0"}
         LOD 300
 
         Pass
@@ -66,36 +66,35 @@ Shader "EQNew/EQSimpleLit"
 
             HLSLPROGRAM
             #pragma exclude_renderers gles gles3 glcore
-            #pragma target 4.5
+            #pragma target 2.0
 
             // -------------------------------------
             // Material Keywords
             #pragma shader_feature_local_fragment _ALPHATEST_ON
-            #pragma shader_feature_local_fragment _ALPHAPREMULTIPLY_ON
-            #pragma shader_feature_local_fragment _ _SPECGLOSSMAP _SPECULAR_COLOR
-            #pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
-            #pragma shader_feature_local _NORMALMAP
-            #pragma shader_feature_local_fragment _EMISSION
-            #pragma shader_feature_local _RECEIVE_SHADOWS_OFF
-            #pragma shader_feature _ENVIRONMENTREFLECTIONS_OF
-            #pragma shader_feature _ENVIRONMENTREFLECTIONS_MIRROR
+            // #pragma shader_feature_local_fragment _ALPHAPREMULTIPLY_ON
+            //#pragma shader_feature_local_fragment _ _SPECGLOSSMAP _SPECULAR_COLOR
+            //#pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
+            //#pragma shader_feature_local _NORMALMAP
+            //#pragma shader_feature_local_fragment _EMISSION   #pragma shader_feature_local _RECEIVE_SHADOWS_OFF
+            //#pragma shader_feature _ENVIRONMENTREFLECTIONS_OF
+            //#pragma shader_feature _ENVIRONMENTREFLECTIONS_MIRROR
             #pragma shader_feature _ENABLE_FOG
 
             // -------------------------------------
             // Universal Pipeline keywords
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+            //#pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+            //#pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
-            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
-            #pragma multi_compile_fragment _ _SHADOWS_SOFT
-            #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
-            #pragma multi_compile _ SHADOWS_SHADOWMASK
+            //#pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+            //#pragma multi_compile_fragment _ _SHADOWS_SOFT
+            //#pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
+            //#pragma multi_compile _ SHADOWS_SHADOWMASK
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
 
             // -------------------------------------
             // Unity defined keywords
-            #pragma multi_compile _ DIRLIGHTMAP_COMBINED
-            #pragma multi_compile _ LIGHTMAP_ON
+            //#pragma multi_compile _ DIRLIGHTMAP_COMBINED
+            //#pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile_fog
 
             //--------------------------------------
@@ -115,7 +114,7 @@ Shader "EQNew/EQSimpleLit"
             ENDHLSL
         }
 
-        Pass
+        /*Pass
         {
             Name "ShadowCaster"
             Tags{"LightMode" = "ShadowCaster"}
@@ -132,7 +131,7 @@ Shader "EQNew/EQSimpleLit"
             // -------------------------------------
             // Material Keywords
             #pragma shader_feature_local_fragment _ALPHATEST_ON
-            #pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
+            //#pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
 
             //--------------------------------------
             // GPU Instancing
@@ -166,20 +165,20 @@ Shader "EQNew/EQSimpleLit"
             // Material Keywords
             #pragma shader_feature_local_fragment _ALPHATEST_ON
             //#pragma shader_feature _ALPHAPREMULTIPLY_ON
-            #pragma shader_feature_local_fragment _ _SPECGLOSSMAP _SPECULAR_COLOR
-            #pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
+            //#pragma shader_feature_local_fragment _ _SPECGLOSSMAP _SPECULAR_COLOR
+            //#pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
             #pragma shader_feature_local _NORMALMAP
-            #pragma shader_feature_local_fragment _EMISSION
-            #pragma shader_feature_local _RECEIVE_SHADOWS_OFF
+            //#pragma shader_feature_local_fragment _EMISSION
+            //#pragma shader_feature_local _RECEIVE_SHADOWS_OFF
 
             // -------------------------------------
             // Universal Pipeline keywords
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+            //#pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+            //#pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
             //#pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             //#pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
-            #pragma multi_compile _ _SHADOWS_SOFT
-            #pragma multi_compile _ _MIXED_LIGHTING_SUBTRACTIVE
+            ///#pragma multi_compile _ _SHADOWS_SOFT
+            //#pragma multi_compile _ _MIXED_LIGHTING_SUBTRACTIVE
 
             // -------------------------------------
             // Unity defined keywords
@@ -201,9 +200,9 @@ Shader "EQNew/EQSimpleLit"
             #include "EQSimpleLitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/SimpleLitGBufferPass.hlsl"
             ENDHLSL
-        }
+        }*/
 
-        Pass
+        /*Pass
         {
             Name "DepthOnly"
             Tags{"LightMode" = "DepthOnly"}
@@ -222,7 +221,7 @@ Shader "EQNew/EQSimpleLit"
             // -------------------------------------
             // Material Keywords
             #pragma shader_feature_local_fragment _ALPHATEST_ON
-            #pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
+            //#pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
 
             //--------------------------------------
             // GPU Instancing
@@ -234,7 +233,7 @@ Shader "EQNew/EQSimpleLit"
             #include "EQSimpleLitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/DepthOnlyPass.hlsl"
             ENDHLSL
-        }
+        }*/
 
         // This pass is used when drawing to a _CameraNormalsTexture texture
         Pass
@@ -254,9 +253,9 @@ Shader "EQNew/EQSimpleLit"
 
             // -------------------------------------
             // Material Keywords
-            #pragma shader_feature_local _NORMALMAP
+            //#pragma shader_feature_local _NORMALMAP
             #pragma shader_feature_local_fragment _ALPHATEST_ON
-            #pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
+            //#pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
 
             //--------------------------------------
             // GPU Instancing
@@ -271,7 +270,7 @@ Shader "EQNew/EQSimpleLit"
         }
 
         // This pass it not used during regular rendering, only for lightmap baking.
-        Pass
+        /*Pass
         {
             Name "Meta"
             Tags{ "LightMode" = "Meta" }
@@ -285,8 +284,8 @@ Shader "EQNew/EQSimpleLit"
             #pragma vertex UniversalVertexMeta
             #pragma fragment UniversalFragmentMetaSimple
 
-            #pragma shader_feature_local_fragment _EMISSION
-            #pragma shader_feature_local_fragment _SPECGLOSSMAP
+            //#pragma shader_feature_local_fragment _EMISSION
+            //#pragma shader_feature_local_fragment _SPECGLOSSMAP
 
 			// LANTERN
             //#include "Packages/com.unity.render-pipelines.universal/Shaders/SimpleLitInput.hlsl"
@@ -308,17 +307,17 @@ Shader "EQNew/EQSimpleLit"
             #pragma vertex vert
             #pragma fragment frag
             #pragma shader_feature_local_fragment _ALPHATEST_ON
-            #pragma shader_feature_local_fragment _ALPHAPREMULTIPLY_ON
+            //#pragma shader_feature_local_fragment _ALPHAPREMULTIPLY_ON
 
 			// LANTERN
             //#include "Packages/com.unity.render-pipelines.universal/Shaders/SimpleLitInput.hlsl"
             #include "EQSimpleLitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Utils/Universal2D.hlsl"
             ENDHLSL
-        }
+        }*/
     }
 
-    SubShader
+    /*SubShader
     {
         Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalPipeline" "UniversalMaterialType" = "SimpleLit" "IgnoreProjector" = "True" "ShaderModel"="2.0"}
         LOD 300
@@ -340,22 +339,22 @@ Shader "EQNew/EQSimpleLit"
             // -------------------------------------
             // Material Keywords
             #pragma shader_feature_local_fragment _ALPHATEST_ON
-            #pragma shader_feature_local_fragment _ALPHAPREMULTIPLY_ON
-            #pragma shader_feature_local_fragment _ _SPECGLOSSMAP _SPECULAR_COLOR
-            #pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
-            #pragma shader_feature_local _NORMALMAP
-            #pragma shader_feature_local_fragment _EMISSION
+            //#pragma shader_feature_local_fragment _ALPHAPREMULTIPLY_ON
+            //#pragma shader_feature_local_fragment _ _SPECGLOSSMAP _SPECULAR_COLOR
+            //#pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
+            //#pragma shader_feature_local _NORMALMAP
+            //#pragma shader_feature_local_fragment _EMISSION
             #pragma shader_feature_local _RECEIVE_SHADOWS_OFF
 
             // -------------------------------------
             // Universal Pipeline keywords
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+            //#pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+            //#pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
-            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
-            #pragma multi_compile_fragment _ _SHADOWS_SOFT
-            #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
-            #pragma multi_compile _ SHADOWS_SHADOWMASK
+            //#pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+            //#pragma multi_compile_fragment _ _SHADOWS_SOFT
+            //#pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
+            //#pragma multi_compile _ SHADOWS_SHADOWMASK
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
 
 
@@ -512,7 +511,7 @@ Shader "EQNew/EQSimpleLit"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Utils/Universal2D.hlsl"
             ENDHLSL
         }
-    }
+    }*/
     Fallback "Hidden/Universal Render Pipeline/FallbackError"
     // LANTERN
 	CustomEditor "UnityEditor.Rendering.Universal.ShaderGUI.EQSimpleLitShader"

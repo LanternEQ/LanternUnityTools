@@ -1,7 +1,7 @@
 #ifndef UNIVERSAL_SIMPLE_LIT_PASS_INCLUDED
 #define UNIVERSAL_SIMPLE_LIT_PASS_INCLUDED
 
-#include "Lighting.hlsl"
+#include "EQLighting.hlsl"
 
 struct Attributes
 {
@@ -128,24 +128,20 @@ half4 LitPassFragmentSimple(Varyings input) : SV_Target
     half alpha = diffuseAlpha.a * _BaseColor.a;
     AlphaDiscard(alpha, _Cutoff);
 
-    #ifdef _ALPHAPREMULTIPLY_ON
-        diffuse *= alpha;
-    #endif
-
     #if _SCREEN_SPACE_OCCLUSION
         diffuse = ApplyAmbientOcclusion(diffuse, alpha, GetNormalizedScreenSpaceUV(input.positionCS), NormalizeNormalPerPixel(input.normal));
     #endif
 
     half4 mixedColor = half4(input.light * diffuse, 1.0f);
     mixedColor.a = alpha;
-
+ 
     // DEBUG LIGHTING
     //mixedColor = half4(input.light, 1.0f);
 
-    #if defined(_ENABLE_FOG)
+    //#if defined(_ENABLE_FOG)
         half fogFactor = ComputeFogFactor(input.fogFactorAndVertexLight.x);
         mixedColor.rgb = MixFog(mixedColor.rgb, fogFactor);
-    #endif
+    //#endif
 
     return mixedColor;
 }
