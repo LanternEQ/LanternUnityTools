@@ -62,10 +62,7 @@ namespace Lantern.EQ.Equipment
 
         public void SpawnItemInSlot(Equipment3dSlot point, GameObject item)
         {
-            if (_spawnedEquipment == null)
-            {
-                _spawnedEquipment = new Dictionary<Equipment3dSlot, EquipmentModel>();
-            }
+            _spawnedEquipment ??= new Dictionary<Equipment3dSlot, EquipmentModel>();
 
             if (_spawnedEquipment.ContainsKey(point))
             {

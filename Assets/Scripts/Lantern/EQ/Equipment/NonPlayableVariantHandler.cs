@@ -127,5 +127,17 @@ namespace Lantern.EQ.Equipment
                 _alternateSkins.Add(am);
             }
         }
+
+        // TODO: Get rid of this
+        public List<Material> GetAllAdditionalMaterials()
+        {
+            var materials = new List<Material>();
+            foreach (var s in _additionalMaterials)
+            {
+                materials.AddRange(s.Value);
+            }
+
+            return materials;
+        }
     }
 }

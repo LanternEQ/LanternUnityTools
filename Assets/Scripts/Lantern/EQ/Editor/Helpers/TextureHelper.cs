@@ -48,8 +48,9 @@ namespace Lantern.EQ.Editor.Helpers
                 else
                 {
                     // Check in global texture folder
-                    string globalPath = "Assets/Content/Textures/" + textureName + ".png";
-
+                    string globalPath = Path.Combine(PathHelper.GetEqAssetPath(), "equipment/Textures/") + textureName + ".png";
+                    globalPath = PathHelper.GetSystemPathFromUnity(globalPath);
+                    
                     if (File.Exists(globalPath))
                     {
                         CopyAndRefresh(destination, globalPath, unityDestinationPath, isMasked);

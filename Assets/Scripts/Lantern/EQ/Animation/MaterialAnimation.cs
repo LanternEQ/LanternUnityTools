@@ -24,18 +24,30 @@ namespace Lantern.EQ.Animation
         {
             foreach (var instance in _instances)
             {
-                instance.DelayCurrent -= (int) (Time.deltaTime * 1000);
+                UpdateInstance(instance);
+            }
+        }
 
-                while (instance.DelayCurrent < 0)
+        private void UpdateInstance(MaterialAnimationData instance)
+        {
+            instance.DelayCurrent -= (int) (Time.deltaTime * 1000);
+
+            while (instance.DelayCurrent < 0)
+            {
+                instance.DelayCurrent += instance.Delay;
+
+                instance.TextureIndex++;
+
+                if (instance.TextureIndex >= instance.Textures.Count)
                 {
-                    instance.DelayCurrent += instance.Delay;
+                    instance.TextureIndex = 0;
+                }
 
-                    instance.TextureIndex++;
+                var newTexture = instance.Textures[instance.TextureIndex];
 
-                    if (instance.TextureIndex >= instance.Textures.Count)
-                    {
-                        instance.TextureIndex = 0;
-                    }
+                if (newTexture == null)
+                {
+                    continue;
                 }
 
                 // TODO: Remove property blocks
@@ -45,7 +57,7 @@ namespace Lantern.EQ.Animation
             }
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         public void AddInstance(MaterialAnimationData matchingMaterialAnimationData, int i)
         {
             if (_renderer == null)

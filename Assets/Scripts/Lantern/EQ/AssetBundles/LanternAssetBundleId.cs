@@ -7,7 +7,7 @@
     public enum LanternAssetBundleId
     {
         Music = 0,
-        Shaders = 1,
+        //Shaders = 1,
         Sound = 2,
         Characters = 3,
         //UI_Dev = 4,

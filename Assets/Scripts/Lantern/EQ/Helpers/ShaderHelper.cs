@@ -8,12 +8,12 @@ namespace Lantern.EQ.Helpers
         private static string _urpUnlit = "Universal Render Pipeline/Unlit";
 
         // Only compatible with URP 10.0.0+
-        private static string _eqLit = "EQNew/EQSimpleLit";
-        private static string _eqUnlit = "EQNew/EQUnlit";
+        private static string _eqLit = "EQ/EQSimpleLit";
+        private static string _eqUnlit = "EQ/EQUnlit";
 
         // No URP version dependencies.
-        private static string _invisible = "EQ/Invisible";
-        private static string _eqSky = "EQ/Sky";
+        private static string _invisible = "EQ/EQInvisible";
+        private static string _eqSky = "EQ/EQSky";
 
         public static string GetLitShaderName()
         {

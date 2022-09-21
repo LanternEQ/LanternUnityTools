@@ -31,7 +31,7 @@ namespace Lantern.EQ.AssetBundles
                 {LanternAssetBundleId.Login_Classic, new Version(0, 1, 5)},
                 {LanternAssetBundleId.CharacterSelect_Classic, new Version(0, 1, 5)},
                 //{LanternAssetBundleId.CharacterSelect_Dev, new Version(0, 1, 5)},
-                {LanternAssetBundleId.Shaders, new Version(0, 1, 5)}, // deprecated
+                //{LanternAssetBundleId.Shaders, new Version(0, 1, 5)},
                 {LanternAssetBundleId.Defaults, new Version(0, 1, 5)},
             };
 
@@ -39,6 +39,7 @@ namespace Lantern.EQ.AssetBundles
             new HashSet<LanternAssetBundleId>
             {
                 LanternAssetBundleId.Construct,
+                //LanternAssetBundleId.Shaders,
                 LanternAssetBundleId.Defaults,
             };
 

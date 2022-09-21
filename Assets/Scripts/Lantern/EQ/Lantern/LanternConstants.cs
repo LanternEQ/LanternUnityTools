@@ -7,5 +7,6 @@
         public static string DefaultZone = "construct";
         public static float FogChangeTime = 2.0f;
         public static int SpellBookPages = 50;
+        public static string AssetBundlePath = "Assets/StreamingAssets/AssetBundles/";
     }
 }

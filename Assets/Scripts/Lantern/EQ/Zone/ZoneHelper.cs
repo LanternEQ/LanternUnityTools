@@ -114,7 +114,7 @@ namespace Lantern.EQ.Zone
             { "qeynos2", new ZoneDesc("qeynos2", "North Qeynos", "Antonica") },
             { "qeytoqrg", new ZoneDesc("qeytoqrg", "Qeynos Hills", "Antonica") },
             { "qrg", new ZoneDesc("qrg", "Surefall Glade", "Antonica") },
-            { "rujarkian", new ZoneDesc("rujarkian", "Rujarkian Hills", "Custom") },
+            //{ "rujarkian", new ZoneDesc("rujarkian", "Rujarkian Hills", "Custom") },
             { "rathemtn", new ZoneDesc("rathemtn", "Rathe Mountains", "Antonica") },
             { "rivervale", new ZoneDesc("rivervale", "Rivervale", "Antonica") },
             { "runnyeye", new ZoneDesc("runnyeye", "Runnyeye Citadel", "Antonica") },
@@ -145,7 +145,7 @@ namespace Lantern.EQ.Zone
             { "warrens", new ZoneDesc("warrens", "The Warrens", "Odus") },
             { "warslikswood", new ZoneDesc("warslikswood", "Warslilks Woods", "Kunark") },
             { "westwastes", new ZoneDesc("westwastes", "Western Wastelands", "Velious") },
-            { "construct", new ZoneDesc("construct", "The Construct", "Other") }
+            //{ "construct", new ZoneDesc("construct", "The Construct", "Other") }
         };
 
         public static Dictionary<string, ZoneDesc> ShortnameDict => shortnameDict;

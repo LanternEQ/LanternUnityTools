@@ -123,7 +123,7 @@ namespace Lantern.Editor.Importers
 
             if (_rebuildBundles)
             {
-                CreateBuilds.BuildAllAssetBundles(false);
+                BuildAssetBundles.BuildAllAssetBundles(false);
             }
 
             string importResult = GetFormattedImportResult(startTime, successful, failed);

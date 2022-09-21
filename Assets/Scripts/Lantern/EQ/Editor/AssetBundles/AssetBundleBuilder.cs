@@ -2,6 +2,7 @@
 using System.IO;
 using Lantern.EQ.AssetBundles;
 using Lantern.EQ.Editor.Helpers;
+using Lantern.EQ.Lantern;
 using Lantern.EQ.Zone;
 using UnityEditor;
 using UnityEngine;
@@ -12,12 +13,12 @@ namespace Lantern.EQ.Editor.AssetBundles
     /// <summary>
     /// Creates asset bundles for the LanternEQ client
     /// </summary>
-    public static class CreateBuilds
+    public static class BuildAssetBundles
     {
 #if LANTERN_CLIENT
-        [MenuItem("Lantern/General/Build AssetBundles", false, 0)]
+        [MenuItem("Lantern/General/Build Asset Bundles", false, 0)]
 #else
-        [MenuItem("EQ/Build AssetBundles", false, 100)]
+        [MenuItem("EQ/Build Asset Bundles", false, 100)]
 #endif
         public static void BuildAllAssetBundles()
         {
@@ -32,7 +33,7 @@ namespace Lantern.EQ.Editor.AssetBundles
                 return;
             }
 
-            var outputPath = PathHelper.GetSystemPathFromUnity("Assets/StreamingAssets/AssetBundles/");
+            var outputPath = PathHelper.GetSystemPathFromUnity(LanternConstants.AssetBundlePath);
 
             if (!Directory.Exists(outputPath))
             {
@@ -43,7 +44,7 @@ namespace Lantern.EQ.Editor.AssetBundles
             double startTime = EditorApplication.timeSinceStartup;
             RestoreOriginalAssetBundleNames();
             AssetDatabase.Refresh();
-            if (BuildPipeline.BuildAssetBundles("Assets/StreamingAssets/AssetBundles", BuildAssetBundleOptions.None,
+            if (BuildPipeline.BuildAssetBundles(LanternConstants.AssetBundlePath, BuildAssetBundleOptions.None,
                 EditorUserBuildSettings.activeBuildTarget) == null)
             {
                 EditorUtility.DisplayDialog("AssetBundles",
@@ -66,10 +67,8 @@ namespace Lantern.EQ.Editor.AssetBundles
 
         private static void RestoreOriginalAssetBundleNames()
         {
-            string path = "Assets/StreamingAssets/AssetBundles";
-
             string[] pathList = new string[1];
-            pathList[0] = path;
+            pathList[0] = LanternConstants.AssetBundlePath;
             var assets = AssetDatabase.FindAssets("", pathList);
 
             foreach (var assetPath in assets)
@@ -111,7 +110,8 @@ namespace Lantern.EQ.Editor.AssetBundles
                 }
 
                 // Create the version string we want
-                if (fileName.EndsWith(version.ToString().Replace('.', '_')))
+                if (fileName.EndsWith(version.ToString().Replace('.', '_'))
+                    && !fileName.StartsWith("shaders"))
                 {
                     // Rename it to the original so that it will not be regenerated
                     var assetsPathWithoutAssets = assetPathString.Remove(0, 6);

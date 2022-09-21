@@ -109,7 +109,8 @@ namespace Lantern.Editor.Importers
             var lightSetter = obj.AddComponent<AmbientLightSetterDynamic>();
             lightSetter.FindRenderers();
 
-            LoadCharacterSounds(obj, _modelSounds);
+            // Disabled in 0.1.5
+            //LoadCharacterSounds(obj, _modelSounds);
 
             characterModel.SetReferences(null, null, null, lightSetter,
                 obj.GetComponent<CharacterSounds>(),
