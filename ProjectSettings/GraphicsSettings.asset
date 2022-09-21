@@ -32,13 +32,14 @@ GraphicsSettings:
   m_AlwaysIncludedShaders:
   - {fileID: 10770, guid: 0000000000000000f000000000000000, type: 0}
   - {fileID: 10782, guid: 0000000000000000f000000000000000, type: 0}
-  - {fileID: 4800000, guid: a0a4a2b9856084f54bc4b22e341039aa, type: 3}
-  - {fileID: 4800000, guid: 857377af4594040fd92518f838205896, type: 3}
-  - {fileID: 4800000, guid: ab4d9788133cb43829ff24ee3b1508ba, type: 3}
   - {fileID: 16000, guid: 0000000000000000f000000000000000, type: 0}
   - {fileID: 16001, guid: 0000000000000000f000000000000000, type: 0}
   - {fileID: 17000, guid: 0000000000000000f000000000000000, type: 0}
-  - {fileID: 4800000, guid: 421646156b5ebec4da06c4e930b1839e, type: 3}
+  - {fileID: 4800000, guid: cc6935416f6c7ed4f93c4553ed1a23b4, type: 3}
+  - {fileID: 4800000, guid: f9f26909ab0dbec44b53bb33434d5a8d, type: 3}
+  - {fileID: 4800000, guid: 1e3df6919bfc21047a01a320e2c0aa0f, type: 3}
+  - {fileID: 4800000, guid: ce27f0200716f7c449d0a38f3d83fb90, type: 3}
+  - {fileID: 4800000, guid: 0c4dd978a96edc84f81f4a19c8a2080a, type: 3}
   m_PreloadedShaders: []
   m_SpritesDefaultMaterial: {fileID: 10754, guid: 0000000000000000f000000000000000,
     type: 0}
@@ -100,9 +101,9 @@ GraphicsSettings:
       enableLPPV: 0
       useDitherMaskForAlphaBlendedShadows: 0
     m_Automatic: 0
-  m_LightmapStripping: 0
+  m_LightmapStripping: 1
   m_FogStripping: 1
-  m_InstancingStripping: 0
+  m_InstancingStripping: 2
   m_LightmapKeepPlain: 0
   m_LightmapKeepDirCombined: 0
   m_LightmapKeepDynamicPlain: 0
