@@ -1,15 +1,26 @@
-# LanternUnityImporter
-EverQuest asset importer and framework for the Unity Engine.
+# LanternUnityTools
+EverQuest asset importer and framework for the Unity engine.
+
+![image](https://user-images.githubusercontent.com/287216/191684208-a9d5ce94-5b01-47b6-8677-b9154e4b7421.png)
 
 # Overview
-The Unity Importer project allows you to import the extracted zone content into Unity. The process is completed automated and handles spawning the zone, objects and fixing all material and shader references. It has been tested on Unity 2018.2.x but may work with newer versions as well.
+The LanternUnityTools provide a fully automated solution for importing and assembling EverQuest assets for use in the Unity engine. It works by creating native Unity assets from intermediate format exports from the LanternExtractor. These assets can be used in your project as is or can be edited any way you like. The toolset also can create asset bundles for the LanternEQ client including custom content and zones.
 
-# How To Use
-1. Download the Unity project from the GitHub repo.
-2. Open the project in Unity.
-3. Put the folder of the zone you have extracted (will match the zone shortname) into the ZoneExports folder in the Unity project.
-4. In the top bar, select `EQ->Editor->Import Zone` or press `ALT + Z`.
-5. Enter the shortname (e.g. arena, gfaydark) of the zone contents you have added to the ZoneExports folder.
-6. Click `Import`
+This project includes hundreds of scripts which recreate EverQuest functonality and custom EQ shaders which accurately render the originl EverQuest lighting.
 
-The editor may take a while to import and fix all assets depending on the size of the zone. If you come across a zone that fails to load or looks incorrect, please create a bug report.
+## Features
+
+The importer supports:
+- Zone importing (vertex color lightmaps, objects, lights, sound and music instances)
+- Object importing (static and animated with vertex color support)
+- Character importing (animations, skeletal attach points, skins and sounds)
+- Equipment importing (animations)
+- Sky importing (logic for sunlight, ambient light and fog)
+  
+## What’s Next
+  - Open source zone, character and equipment viewer
+  - Equipment particles
+  - Post Velious zone support
+
+## How To Use
+Please visit the [wiki](https://github.com/LanternEQ/LanternUnityTools/wiki) for more info.
