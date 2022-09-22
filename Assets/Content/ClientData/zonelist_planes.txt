@@ -1,0 +1,6 @@
+﻿# Lantern Zone List - Planes
+airplane
+hateplane
+fearplane
+growthplane
+mischiefplane

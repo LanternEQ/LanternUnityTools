@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - ZoneMesh
+  - ObjectMesh
+  - CharacterMesh
+  - SkyMesh
+  - ZoneRoot
+  - UiRoot
+  - ZoneEnvironment
+  - Clickable
+  - NPC
+  - ObjectRoot
+  - LightRoot
+  - DoorRoot
+  - SoundRoot
+  - MusicRoot
+  - PrefabRoot
+  - StaticLight
+  - DynamicLight
+  - EquipmentMesh
+  - ZoneRaycast
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - 
+  - 
+  - Player
+  - Sky
+  - Zone
+  - Objects
+  - Door
+  - Invisible
+  - ObjectStaticLit
+  - ObjectDynamicLit
+  - ZoneRaycast
+  - IgnoreTarget
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0

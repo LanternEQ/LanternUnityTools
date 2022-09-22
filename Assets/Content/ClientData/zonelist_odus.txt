@@ -1,0 +1,13 @@
+﻿# Lantern Zone List - Odus
+# Cities
+erudnint
+erudnext
+paineel
+
+# Outdoors/Dungeons
+erudsxing
+kerraridge
+tox
+hole
+stonebrunt
+warrens

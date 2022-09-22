@@ -1,0 +1,19 @@
+﻿# Lantern Zone List - Faydwer
+# Cities
+akanon
+felwithea
+felwitheb
+kaladima
+kaladimb
+gfaydark
+
+# Outdoor/Dungeon
+butcher
+cauldron
+lfaydark
+oot
+steamfont
+crushbone
+kedge
+mistmoore
+unrest
