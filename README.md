@@ -1,5 +1,5 @@
 # LanternUnityImporter
-EverQuest zone importer for the Unity Engine.
+EverQuest asset importer and framework for the Unity Engine.
 
 # Overview
 The Unity Importer project allows you to import the extracted zone content into Unity. The process is completed automated and handles spawning the zone, objects and fixing all material and shader references. It has been tested on Unity 2018.2.x but may work with newer versions as well.
