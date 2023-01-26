@@ -207,6 +207,50 @@ namespace Lantern.EQ.Helpers
             return false;
         }
 
+        public static bool TryGetGroundHitPosition(Vector3 origin, out Vector3 position, bool includeNonSolidSurfaces = false)
+        {
+            if (TryRaycastSingleNonAlloc(origin, Vector3.down, 1000f,
+                1 << LanternLayers.ObjectsStaticLit | 1 << LanternLayers.ObjectsDynamicLit |
+                1 << (includeNonSolidSurfaces ? LanternLayers.ZoneRaycast : LanternLayers.Zone), out var hit) && hit.HasValue)
+            {
+                position = hit.Value.point;
+                return true;
+            }
+
+            position = Vector3.zero;
+            return false;
+        }
+
+        public static bool TryGetSurfaceNormal(Vector3 origin, out Vector3 normal, bool includeNonSolidSurfaces = false)
+        {
+            if (TryRaycastSingleNonAlloc(origin, Vector3.down, 1000f,
+                1 << LanternLayers.ObjectsStaticLit | 1 << LanternLayers.ObjectsDynamicLit |
+                1 << (includeNonSolidSurfaces ? LanternLayers.ZoneRaycast : LanternLayers.Zone), out var hit) && hit.HasValue)
+            {
+                normal = hit.Value.normal;
+                return true;
+            }
+
+            normal = Vector3.zero;
+            return false;
+        }
+
+        public static bool TryGetGroundHeightAndSurfaceNormal(Vector3 origin, out float height, out Vector3 normal, bool includeNonSolidSurfaces = false)
+        {
+            if (TryRaycastSingleNonAlloc(origin, Vector3.down, 1000f,
+                1 << LanternLayers.ObjectsStaticLit | 1 << LanternLayers.ObjectsDynamicLit |
+                1 << (includeNonSolidSurfaces ? LanternLayers.ZoneRaycast : LanternLayers.Zone), out var hit) && hit.HasValue)
+            {
+                height = hit.Value.point.y;
+                normal = hit.Value.normal;
+                return true;
+            }
+
+            height = 0f;
+            normal = Vector3.zero;
+            return false;
+        }
+
         public static bool TryGetGroundHeightDebug(Vector3 position, out float height)
         {
             // The number added to the y-pos cannot be too large or NPCs will path onto walls when walking thru gates.

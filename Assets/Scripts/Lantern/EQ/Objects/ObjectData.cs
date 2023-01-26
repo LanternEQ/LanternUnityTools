@@ -21,7 +21,7 @@ namespace Lantern.EQ.Objects
         }
 
         [SerializeField]
-        private List<ObjectInstance> _objects = new List<ObjectInstance>();
+        private List<ZoneObject> _objects = new List<ZoneObject>();
 
         #if UNITY_EDITOR
         public void AddObjectInstance(string name, Vector3 position, Vector3 rotation, float scale, List<Color> colors, ObjectBoundingInfo bounds)
@@ -55,7 +55,7 @@ namespace Lantern.EQ.Objects
                 Radius = bounds.Radius * scale
             };
 
-            _objects.Add(new ObjectInstance
+            _objects.Add(new ZoneObject
             {
                 Name = name,
                 Position = position,
@@ -67,7 +67,7 @@ namespace Lantern.EQ.Objects
         }
         #endif
 
-        public List<ObjectInstance> GetObjects()
+        public List<ZoneObject> GetObjects()
         {
             return _objects;
         }

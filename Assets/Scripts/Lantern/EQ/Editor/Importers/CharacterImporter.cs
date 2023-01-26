@@ -6,6 +6,7 @@ using Lantern.EQ.Animation;
 using Lantern.EQ.Characters;
 using Lantern.EQ.Data;
 using Lantern.EQ.Editor.Helpers;
+using Lantern.EQ.Editor.Importers;
 using Lantern.EQ.Equipment;
 using Lantern.EQ.Helpers;
 using Lantern.EQ.Lighting;
@@ -167,7 +168,7 @@ namespace Lantern.Editor.Importers
 
             variantHandler = skeleton.GetComponent<VariantHandler>();
 
-            if (RaceHelper.IsPlayableRace(modelAsset))
+            if (RaceHelper.IsPlayableRaceModel(modelAsset))
             {
                 FindEquipmentTextures(modelAsset, variantHandler);
                 FindAdditionalFaces(modelAsset, variantHandler.GetLastPrimaryMesh(), variantHandler);
@@ -381,10 +382,10 @@ namespace Lantern.Editor.Importers
         private static void LoadCharacterSounds(GameObject skeleton, List<ModelSound> soundData)
         {
             // Sound script is added regardless
-            string modelName = skeleton.name;
-            int? raceId = RaceHelper.GetRaceIdFromModelName(skeleton.name);
+         /*   string modelName = skeleton.name;
+            int raceId = ServiceFa RaceHelper.GetRaceIdFromModelName(skeleton.name);
 
-            if (!raceId.HasValue)
+            if (raceId == 0)
             {
                 return;
             }
@@ -406,7 +407,7 @@ namespace Lantern.Editor.Importers
             // Handle gender variants
             if (validSounds.Count > 1)
             {
-                GenderId? gender = RaceHelper.GetRaceGenderFromModelName(modelName.ToUpper());
+                GenderId? gender = RaceHelper.GetGenderFromModel(modelName.ToUpper());
 
                 if (!gender.HasValue)
                 {
@@ -572,7 +573,7 @@ namespace Lantern.Editor.Importers
                     AddSoundToCharacterSounds("Punch1.WAV", CharacterSoundType.LargePunch, soundBaseScript,
                         validSound.VariantId);
                 }
-            }
+            }*/
         }
 
         // Move this to the parser

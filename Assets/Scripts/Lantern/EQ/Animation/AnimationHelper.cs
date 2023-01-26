@@ -6,14 +6,14 @@ namespace Lantern.EQ.Animation
 {
     public static class AnimationHelper
     {
-        private static Dictionary<string, AnimationType> _animationTypeMapping = new Dictionary<string, AnimationType>
+        private static readonly Dictionary<string, AnimationType> _animationTypeMapping = new Dictionary<string, AnimationType>
         {
             { "c01", AnimationType.CombatKick },
             { "c02", AnimationType.CombatPiercing },
             { "c03", AnimationType.Combat2HSlash },
             { "c04", AnimationType.Combat2HBlunt },
-            { "c05", AnimationType.CombatThrowing },
-            { "c06", AnimationType.Combat1HSlash },
+            { "c05", AnimationType.Combat1HSlash },
+            { "c06", AnimationType.Combat1HSlashOffhand },
             { "c07", AnimationType.CombatBash },
             { "c08", AnimationType.CombatHandToHand },
             { "c09", AnimationType.CombatArchery },
@@ -76,11 +76,12 @@ namespace Lantern.EQ.Animation
             { "s26", AnimationType.SocialShiver },
             { "s27", AnimationType.SocialTapFoot },
             { "s28", AnimationType.SocialBow },
+            { "t01", AnimationType.InstrumentDrum },
             { "t02", AnimationType.InstrumentString },
             { "t03", AnimationType.InstrumentWind },
-            { "t04", AnimationType.SpellCast42 },
-            { "t05", AnimationType.SpellCast43 },
-            { "t06", AnimationType.SpellCast44 }, // correct
+            { "t04", AnimationType.SpellCastDefense },
+            { "t05", AnimationType.SpellCastGeneral },
+            { "t06", AnimationType.SpellCastMissile }, // correct
             { "t07", AnimationType.CombatFlyingKick },
             { "t08", AnimationType.CombatRapidPunch },
             { "t09", AnimationType.CombatHeavyPunch },
@@ -223,6 +224,11 @@ namespace Lantern.EQ.Animation
             return _animationTypeMapping[animationSuffix];
         }
 
+        public static AnimationType? GetAnimationType(int index)
+        {
+            return (AnimationType)index;
+        }
+
         public static bool IsVariableSpeedState(CharacterAnimationState state)
         {
             switch (state)
@@ -277,7 +283,9 @@ namespace Lantern.EQ.Animation
             if (data.IsDucking)
             {
                 return new AnimationSpeed
-                    { AnimationType = AnimationType.LocomotionDuckWalk, Speed = Mathf.Abs(speed) };
+                {
+                    AnimationType = AnimationType.LocomotionDuckWalk, Speed = Mathf.Abs(speed)
+                };
             }
 
             return new AnimationSpeed
@@ -322,25 +330,6 @@ namespace Lantern.EQ.Animation
             }
 
             return animationType + $" ({animName})";
-        }
-
-        public static AnimationType? GetSpellAnimation(int index)
-        {
-            switch (index)
-            {
-                case 40:
-                    return AnimationType.InstrumentWind;
-                case 41:
-                    return AnimationType.InstrumentString;
-                case 42:
-                    return AnimationType.SpellCast42;
-                case 43:
-                    return AnimationType.SpellCast43;
-                case 44:
-                    return AnimationType.SpellCast44;
-            }
-
-            return null;
         }
     }
 }

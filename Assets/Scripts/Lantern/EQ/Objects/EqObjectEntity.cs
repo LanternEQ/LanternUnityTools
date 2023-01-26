@@ -9,11 +9,10 @@ namespace Lantern.EQ.Objects
     /// Contains all info needed to spawn in the object.
     /// </summary>
     [Serializable]
-    public class ObjectInstance
+    public class ZoneObject
     {
         [NonSerialized]
         public int Id;
-        public GameObject GameObject;
         public string Name;
         public Vector3 Position;
         public Vector3 Rotation;
