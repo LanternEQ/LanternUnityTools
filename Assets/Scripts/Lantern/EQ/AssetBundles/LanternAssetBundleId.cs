@@ -25,6 +25,7 @@
         CharacterSelect_Classic = 16,
         Login_Dev = 17,
         Login_Classic = 18,
-        Defaults = 19
+        Defaults = 19,
+        ClientData = 20,
     }
 }

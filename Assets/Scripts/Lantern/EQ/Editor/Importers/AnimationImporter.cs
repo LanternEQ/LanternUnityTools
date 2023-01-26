@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using Infrastructure.EQ.TextParser;
+using Lantern.Editor.Importers;
 using Lantern.EQ.Animation;
 using Lantern.EQ.Editor.Helpers;
 using UnityEditor;
 using UnityEngine;
 
-namespace Lantern.Editor.Importers
+namespace Lantern.EQ.Editor.Importers
 {
     public static class AnimationImporter
     {
@@ -46,7 +47,7 @@ namespace Lantern.Editor.Importers
 
             AnimationClip clip = new AnimationClip();
 
-            if (animationName != "pos")
+            /*if (animationName != "pos")
             {
                 AnimationEvent animationStartedEvent = new AnimationEvent
                 {
@@ -56,7 +57,7 @@ namespace Lantern.Editor.Importers
                 };
 
                 AnimationUtility.SetAnimationEvents(clip, new[] { animationStartedEvent });
-            }
+            }*/
 
             AnimationCurve posXCurve = new AnimationCurve();
             AnimationCurve posYCurve = new AnimationCurve();

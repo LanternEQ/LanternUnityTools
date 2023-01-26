@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Infrastructure.EQ.TextParser;
 using Lantern.EQ.Animation;
 using Lantern.EQ.Editor.Helpers;
+using Lantern.EQ.Editor.Importers;
 using Lantern.EQ.Equipment;
 using Lantern.EQ.Helpers;
 using Lantern.EQ.Lighting;
@@ -81,7 +82,7 @@ namespace Lantern.Editor.Importers
 
             if (importType == AssetImportType.Characters)
             {
-                if (RaceHelper.IsPlayableRace(assetName))
+                if (RaceHelper.IsPlayableRaceModel(assetName))
                 {
                     handler = skeletonRoot.AddComponent<Equipment2dHandler>();
                 }

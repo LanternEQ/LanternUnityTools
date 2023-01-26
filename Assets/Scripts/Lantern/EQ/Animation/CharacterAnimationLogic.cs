@@ -87,7 +87,7 @@ namespace Lantern.EQ.Animation
         private void PlayActiveAnimation(AnimationType animation)
         {
             _animationController.PlayOneShotAnimation(animation, 1.0f, AnimationImportance.Action,
-                true, AnimationType.PassiveStandArmsAtSides);
+                true, AnimationType.PassiveStand);
             ResetIdleTimer();
         }
 
@@ -314,6 +314,16 @@ namespace Lantern.EQ.Animation
 
         private void Update()
         {
+            if (_state == null)
+            {
+                return;
+            }
+
+            if (_state.IsInCombat)
+            {
+                return;
+            }
+
             // These animation states have accompanying idle animations
             if (_currentState == CharacterAnimationState.Sitting
                 || _currentState == CharacterAnimationState.Standing

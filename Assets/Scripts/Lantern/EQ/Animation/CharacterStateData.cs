@@ -8,6 +8,7 @@ namespace Lantern.EQ.Animation
     /// </summary>
     public class CharacterStateData
     {
+        public bool IsInCombat;
         public bool IsDead;
         public bool IsSwimming;
         public bool IsDucking;

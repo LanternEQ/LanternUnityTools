@@ -81,6 +81,14 @@ namespace Lantern.EQ.Editor.EqAssetCopy
                 },
                 AssetImportType = AssetImportType.SpriteSheet // converted to sprites in post processing
             },
+            new AssetToCopy
+            {
+                EqFolder = "clientdata", AssetBundle = LanternAssetBundleId.ClientData, AssetsToCopy = new List<string>
+                {
+                    "spells.eff",
+                },
+                AssetImportType = AssetImportType.ClientData
+            },
         };
 
         public static List<SpritesSheetsToSplice> SpriteSheetsToSplice = new List<SpritesSheetsToSplice>

@@ -27,6 +27,7 @@ namespace Lantern.EQ.Equipment
         private SkinnedMeshRenderer _currentBody;
         private SkinnedMeshRenderer _currentHelm;
         private BodyType _currentBodyType;
+        private BodyType _previousBodyType;
         private bool _isCustomFace;
 
         protected override void Awake()
@@ -54,17 +55,20 @@ namespace Lantern.EQ.Equipment
         private void SetBodyType(BodyType type)
         {
             var previousBody = _currentBody;
+            _previousBodyType = _currentBodyType;
+            var mainBodyMesh = GetMainBodyMesh();
+            var robeBodyMesh = GetRobeMesh();
 
-            if (_bodyMeshes.Count <= 1)
+            if (robeBodyMesh == null)
             {
-                _currentBody = _bodyMeshes[0];
+                _currentBody = mainBodyMesh;
                 _currentBodyType = BodyType.Normal;
                 return;
             }
 
-            _bodyMeshes[0].gameObject.SetActive(type == BodyType.Normal);
-            _bodyMeshes[1].gameObject.SetActive(type == BodyType.Robe);
-            _currentBody = type == BodyType.Normal ? _bodyMeshes[0] : _bodyMeshes[1];
+            mainBodyMesh.gameObject.SetActive(type == BodyType.Normal);
+            robeBodyMesh.gameObject.SetActive(type == BodyType.Robe);
+            _currentBody = type == BodyType.Normal ? mainBodyMesh : robeBodyMesh;
             _currentBodyType = type;
 
             if (previousBody != _currentBody)
@@ -519,9 +523,9 @@ namespace Lantern.EQ.Equipment
             _equipmentTextures[skinnedMeshRenderer].SkinList.Add(new SkinTextures{SkinId = index, Textures = textures});
         }
 
-        public bool IsRobeMeshActive()
+        public bool WasRobeMeshActive()
         {
-            return _currentBodyType == BodyType.Robe;
+            return _previousBodyType == BodyType.Robe;
         }
 
         public void SetCustomFaceSet()

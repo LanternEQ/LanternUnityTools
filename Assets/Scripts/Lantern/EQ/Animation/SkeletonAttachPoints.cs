@@ -8,7 +8,12 @@ namespace Lantern.EQ.Animation
         [SerializeField]
         private AttachPoint _attachPoint;
 
-        // Editor only
+        public Transform GetAttachPoint(SkeletonPoints point)
+        {
+            return _attachPoint.ContainsKey(point) ? _attachPoint[point] : null;
+        }
+
+#if UNITY_EDITOR
         public void FindAttachPoints()
         {
             _attachPoint = new AttachPoint();
@@ -26,12 +31,17 @@ namespace Lantern.EQ.Animation
             FindAndAddPoint(skeletonRoot, "shield_point", SkeletonPoints.Shield);
             FindAndAddPoint(skeletonRoot, "bo_l", SkeletonPoints.FootLeft);
             FindAndAddPoint(skeletonRoot, "bo_r", SkeletonPoints.FootRight);
-            AddSkeletonPoint(skeletonRoot, SkeletonPoints.Center);
-        }
 
-        public Transform GetAttachPoint(SkeletonPoints point)
-        {
-            return _attachPoint.ContainsKey(point) ? _attachPoint[point] : null;
+            // For the center, it's best to use the first child bone
+            // As a fallback, we can use the skeleton root
+            if (skeletonRoot.childCount != 0)
+            {
+                AddSkeletonPoint(skeletonRoot.GetChild(0), SkeletonPoints.Center);
+            }
+            else
+            {
+                AddSkeletonPoint(skeletonRoot, SkeletonPoints.Center);
+            }
         }
 
         private void FindAndAddPoint(Transform skeletonRoot, string boneName, SkeletonPoints rightHand)
@@ -50,5 +60,6 @@ namespace Lantern.EQ.Animation
         {
             _attachPoint[rightHand] = skeletonRoot;
         }
+    #endif
     }
 }

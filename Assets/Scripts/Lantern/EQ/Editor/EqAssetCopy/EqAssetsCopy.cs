@@ -79,6 +79,7 @@ namespace Lantern.EQ.Editor.EqAssetCopy
             AssetDatabase.Refresh();
             ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "Sprites", "sprites");
             ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "Startup", "startup");
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "ClientData", "clientdata");
             ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "CharacterSelect_Classic", "characterselect_classic");
             AssetDatabase.Refresh();
             EditorUtility.DisplayDialog("EQAssetsCopy",
@@ -156,6 +157,35 @@ namespace Lantern.EQ.Editor.EqAssetCopy
                         }
                     }
 
+                    break;
+                }
+                case AssetImportType.ClientData:
+                {
+                    if (!string.IsNullOrEmpty(unityPath))
+                    {
+                        string assetPath = unityPath + "/" + file;
+
+                        // Unity needs a `.txt` or `.bytes` ext to read unknown binary files from a bundle
+                        const string txtAssetExt = ".txt";
+                        if (!destinationFile.EndsWith(txtAssetExt))
+                        {
+                            var renamePath = Path.Combine(destinationFile + txtAssetExt);
+                            if (File.Exists(renamePath))
+                            {
+                                File.Delete(renamePath);
+                            }
+
+                            File.Move(destinationFile, destinationFile + txtAssetExt);
+                            assetPath += txtAssetExt;
+                        }
+
+                        AssetDatabase.Refresh();
+                        var importer = AssetImporter.GetAtPath(assetPath);
+                        if (importer != null)
+                        {
+                            importer.SaveAndReimport();
+                        }
+                    }
                     break;
                 }
             }

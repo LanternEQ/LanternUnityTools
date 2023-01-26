@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Lantern.EQ.Animation;
 using Lantern.EQ.Editor.Helpers;
+using Lantern.EQ.Editor.Importers;
 using UnityEditor;
 using UnityEngine;
 

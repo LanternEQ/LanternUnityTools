@@ -18,6 +18,9 @@
         public static int SecondsPerDay = 4320;
         public static int SkillPointCategories = 7;
         public static int MaxLevel = 99;
+        public static float TickInterval = 6.0f;
+        public static int SpellEffectCount = 12;
+        public static int SpellLevelLimit = 61;
 
         // Movement
         public static float Velocity = 42.65f;
@@ -41,11 +44,21 @@
 
         // Camera
         public const float CameraPivotIncrement = 1.24f;
+        public const float MainCameraFov = 110f;
+        public const float InventoryCameraFov = 86f;
 
         // Distance
         public static float NpcInteractionRange = 20f;
         public static float ObjectInteractionRange = 20f;
         public static float DoorInteractionRange = 20f;
         public static float BeggingRange = 15f;
+        public static float ExperienceRange = 500f;
+
+        // Models
+        public static string DefaultModelMale = "hum";
+        public static string DefaultModelFemale = "huf";
+        public static int DefaultModelSize = 6;
+
+        public static int ZonelineMagicNumber = 999999;
     }
 }

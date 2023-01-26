@@ -317,7 +317,7 @@ Shader "EQ/EQSimpleLit"
         }*/
     }
 
-    /*SubShader
+    SubShader
     {
         Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalPipeline" "UniversalMaterialType" = "SimpleLit" "IgnoreProjector" = "True" "ShaderModel"="2.0"}
         LOD 300
@@ -345,6 +345,7 @@ Shader "EQ/EQSimpleLit"
             //#pragma shader_feature_local _NORMALMAP
             //#pragma shader_feature_local_fragment _EMISSION
             #pragma shader_feature_local _RECEIVE_SHADOWS_OFF
+            #pragma shader_feature _ENABLE_FOG
 
             // -------------------------------------
             // Universal Pipeline keywords
@@ -376,7 +377,7 @@ Shader "EQ/EQSimpleLit"
             ENDHLSL
         }
 
-        Pass
+        /*Pass
         {
             Name "ShadowCaster"
             Tags{"LightMode" = "ShadowCaster"}
@@ -430,7 +431,7 @@ Shader "EQ/EQSimpleLit"
             #include "EQSimpleLitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/DepthOnlyPass.hlsl"
             ENDHLSL
-        }
+        }*/
 
         // This pass is used when drawing to a _CameraNormalsTexture texture
         Pass
@@ -466,7 +467,7 @@ Shader "EQ/EQSimpleLit"
         }
 
         // This pass it not used during regular rendering, only for lightmap baking.
-        Pass
+        /*Pass
         {
             Name "Meta"
             Tags{ "LightMode" = "Meta" }
@@ -510,8 +511,8 @@ Shader "EQ/EQSimpleLit"
             #include "EQSimpleLitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Utils/Universal2D.hlsl"
             ENDHLSL
-        }
-    }*/
+        }*/
+    }
     Fallback "Hidden/Universal Render Pipeline/FallbackError"
     // LANTERN
 	CustomEditor "UnityEditor.Rendering.Universal.ShaderGUI.EQSimpleLitShader"

@@ -41,5 +41,15 @@ namespace Lantern.EQ.Helpers
         {
             return new Vector3 {x = y, y = x, z = z};
         }
+
+        public static Vector2 GetEqPosition2d(Vector3 position)
+        {
+            return new Vector2(position.x, position.z);
+        }
+
+        public static Vector3 GetEqToLanternPosition(float spawnX, float spawnY, float spawnZ)
+        {
+            return new Vector3(spawnX * LanternConstants.WorldScale, spawnZ * LanternConstants.WorldScale, spawnY * LanternConstants.WorldScale);
+        }
     }
 }
