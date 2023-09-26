@@ -6,7 +6,7 @@ EverQuest asset importer and framework for the Unity engine.
 # Overview
 The LanternUnityTools provide a fully automated solution for importing and assembling EverQuest assets for use in the Unity engine. It works by creating native Unity assets from intermediate format exports from the [LanternExtractor](https://github.com/LanternEQ/LanternExtractor). These assets can be used in your project as is or can be edited any way you like. The toolset also can create asset bundles for the LanternEQ client including custom content and zones.
 
-This project includes hundreds of scripts which recreate EverQuest functonality and custom EQ shaders which accurately render the originl EverQuest lighting.
+This project includes hundreds of scripts which recreate EverQuest functionality and custom EQ shaders which accurately render the original EverQuest lighting.
 
 ## Features
 
