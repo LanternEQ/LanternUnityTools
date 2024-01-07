@@ -3,7 +3,6 @@ using System.Linq;
 using Lantern.EQ.Animation;
 using Lantern.EQ.Equipment;
 using Lantern.EQ.Lighting;
-using Lantern.EQ.Sound;
 using UnityEngine;
 
 namespace Lantern.EQ.Characters
@@ -21,8 +20,46 @@ namespace Lantern.EQ.Characters
         public Equipment2dHandler Equipment2dHandler;
         public Equipment3dHandler Equipment3dHandler;
         public AmbientLightSetterDynamic AmbientLightSetterDynamic;
-        public CharacterSoundsBase CharacterSounds;
         public CharacterAnimationLogic CharacterAnimationLogic;
+        public CharacterSoundLogic CharacterSoundLogic;
+
+        private void Awake()
+        {
+            if (CharacterAnimationLogic != null)
+            {
+                CharacterAnimationLogic.SetAnimationFiredCallback(OnAnimationPlayed);
+            }
+        }
+
+        private void OnAnimationPlayed(AnimationType animationType)
+        {
+            // Propagate to animated equipment
+            if (Equipment3dHandler != null)
+            {
+                Equipment3dHandler.PlayAnimation(animationType);
+            }
+
+            if (CharacterSoundLogic == null)
+            {
+                return;
+            }
+
+            // Sound is a combination of animation and equipment sound override
+            if (AnimationHelper.IsAttackAnimation(animationType))
+            {
+                if (animationType == AnimationType.Combat1HSlashOffhand)
+                {
+                    //CharacterSoundLogic.PlaySound(EquipmentHelper.GetSoundForEquipment(Equipment3dHandler.EquipmentSoundPrimary));
+                }
+            }
+
+            if (AnimationHelper.IsWalkRunInterrupt(animationType))
+            {
+                CharacterSoundLogic.InterruptWalkRunSound();
+            }
+
+            CharacterSoundLogic.PlaySound(AnimationHelper.GetSoundFromType(animationType));
+        }
 
         public void SetLayer(int layer)
         {
@@ -40,15 +77,15 @@ namespace Lantern.EQ.Characters
 #if UNITY_EDITOR
         public void SetReferences(SkeletonAttachPoints skeletonAttachPoints, Equipment2dHandler equipment2dHandler,
             Equipment3dHandler equipment3dHandler, AmbientLightSetterDynamic
-                ambientLightSetterDynamic, CharacterSoundsBase characterSounds,
+                ambientLightSetterDynamic, CharacterSoundLogic characterSounds,
             CharacterAnimationLogic characterAnimationLogic)
         {
             SkeletonAttachPoints = skeletonAttachPoints;
             Equipment2dHandler = equipment2dHandler;
             Equipment3dHandler = equipment3dHandler;
             AmbientLightSetterDynamic = ambientLightSetterDynamic;
-            CharacterSounds = characterSounds;
             CharacterAnimationLogic = characterAnimationLogic;
+            CharacterSoundLogic = characterSounds;
             Renderers = GetComponentsInChildren<Renderer>(true).ToList();
         }
 #endif

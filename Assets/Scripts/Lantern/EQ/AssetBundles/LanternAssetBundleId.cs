@@ -6,7 +6,7 @@
     /// </summary>
     public enum LanternAssetBundleId
     {
-        Music = 0,
+        Music_Audio = 0,
         //Shaders = 1,
         Sound = 2,
         Characters = 3,
@@ -27,5 +27,6 @@
         Login_Classic = 18,
         Defaults = 19,
         ClientData = 20,
+        Music_Midi = 21,
     }
 }

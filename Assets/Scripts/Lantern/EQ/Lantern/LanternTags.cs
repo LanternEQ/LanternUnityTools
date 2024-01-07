@@ -5,6 +5,7 @@
     /// </summary>
     public static class LanternTags
     {
+        public static string Player = "Player";
         public static string PrefabRoot = "PrefabRoot";
         public static string ZoneRoot = "ZoneRoot";
         public static string ObjectRoot = "ObjectRoot";

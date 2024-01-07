@@ -41,6 +41,11 @@ namespace Lantern.EQ.Animation
             _isInitialized = true;
         }
 
+        public void SetAnimationFiredCallback(Action<AnimationType> callback)
+        {
+            _animationController.SetAnimationFiredCallback(callback);
+        }
+
 #if UNITY_EDITOR
         public void InitializeImport()
         {
@@ -321,6 +326,7 @@ namespace Lantern.EQ.Animation
 
             if (_state.IsInCombat)
             {
+                ResetIdleTimer(false);
                 return;
             }
 
@@ -429,14 +435,7 @@ namespace Lantern.EQ.Animation
         public void SetAnimationDebug(Action<string> callback)
         {
             _animationDebugCallback = callback;
-                _animationController.SetAnimationDebug(_animationDebugCallback);
-        }
-
-        // TODO: Deprecate this. Should all go through something else.
-        public void PlayOneShotAnimation(AnimationType animationType, float speed = 1f, int importance = 0, AnimationType? newConstantState = null)
-        {
-
-            _animationController.PlayOneShotAnimation(animationType, speed, importance, true, newConstantState);
+            _animationController.SetAnimationDebug(_animationDebugCallback);
         }
     }
 }

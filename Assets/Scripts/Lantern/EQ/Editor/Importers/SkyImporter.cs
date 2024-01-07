@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using Lantern.Editor.Importers;
 using Lantern.EQ.Editor.Helpers;
 using Lantern.EQ.Environment;
 using Lantern.EQ.Helpers;

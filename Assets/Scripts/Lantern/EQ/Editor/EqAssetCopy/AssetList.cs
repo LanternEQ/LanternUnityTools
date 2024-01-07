@@ -85,9 +85,27 @@ namespace Lantern.EQ.Editor.EqAssetCopy
             {
                 EqFolder = "clientdata", AssetBundle = LanternAssetBundleId.ClientData, AssetsToCopy = new List<string>
                 {
-                    "spells.eff",
-                },
-                AssetImportType = AssetImportType.ClientData
+                    "spells.eff"
+                 }, AssetImportType = AssetImportType.ClientData
+            },
+            new AssetToCopy
+            {
+                EqFolder = "equipment/textures", AssetBundle = LanternAssetBundleId.Equipment, AssetsToCopy = new List<string>
+                {
+                    "icopper.png",
+                    "isilver.png",
+                    "igold.png",
+                    "iplat.png",
+                 }, AssetImportType = AssetImportType.Sprite
+            },
+            new AssetToCopy
+            {
+                EqFolder = "music", AssetBundle = LanternAssetBundleId.Music_Midi,
+                AssetImportType = AssetImportType.Xmi
+            },
+            new AssetToCopy()
+            {
+                EqFolder = "sounds", AssetBundle = LanternAssetBundleId.Sound, AssetImportType = AssetImportType.Sound
             },
         };
 
