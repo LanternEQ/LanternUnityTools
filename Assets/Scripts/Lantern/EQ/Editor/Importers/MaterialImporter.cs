@@ -9,7 +9,7 @@ using Lantern.EQ.Helpers;
 using UnityEditor;
 using UnityEngine;
 
-namespace Lantern.Editor.Importers
+namespace Lantern.EQ.Editor.Importers
 {
     public static class MaterialImporter
     {
@@ -71,7 +71,7 @@ namespace Lantern.Editor.Importers
                 }
                 else
                 {
-                    List<string> textureNames = TextParser.ParseStringToList(line[3]);
+                    List<string> textureNames = TextParser.ParseTextToList(line[3]);
 
                     List<Texture> textures = new List<Texture>();
 

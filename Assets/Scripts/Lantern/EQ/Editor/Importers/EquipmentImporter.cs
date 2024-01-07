@@ -3,11 +3,11 @@ using System.IO;
 using System.Linq;
 using Lantern.EQ.Animation;
 using Lantern.EQ.Editor.Helpers;
-using Lantern.EQ.Editor.Importers;
+using Lantern.EQ.Equipment;
 using UnityEditor;
 using UnityEngine;
 
-namespace Lantern.Editor.Importers
+namespace Lantern.EQ.Editor.Importers
 {
     public static class EquipmentImporter
     {
@@ -61,8 +61,11 @@ namespace Lantern.Editor.Importers
 
         private static void AddModelScript(GameObject go)
         {
+            var ea = go.AddComponent<EquipmentAnimation>();
+            ea.InitializeImport();
+
             var em = go.AddComponent<EquipmentModel>();
-            em.FindRenderers();
+            em.SetReferences(ea);
         }
 
         private static void CreateHdVariant(GameObject go)
@@ -152,23 +155,23 @@ namespace Lantern.Editor.Importers
         {
             string modelAsset = go.name;
 
-            var animation = go.GetComponent<Animation>();
+            var animation = go.GetComponent<UnityEngine.Animation>();
 
             if (animation == null)
             {
                 return;
             }
 
-            AddModelScript(go);
-
             // Find animations
             if (animation != null)
             {
                 LoadEquipmentAnimations(animation, modelAsset, AssetImportType.Equipment);
             }
+
+            AddModelScript(go);
         }
 
-        private static void LoadEquipmentAnimations(Animation animation, string animationBase, AssetImportType type)
+        private static void LoadEquipmentAnimations(UnityEngine.Animation animation, string animationBase, AssetImportType type)
         {
             string prefix = animationBase + "_";
 

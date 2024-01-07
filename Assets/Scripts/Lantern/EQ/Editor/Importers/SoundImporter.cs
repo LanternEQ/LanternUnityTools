@@ -1,114 +1,146 @@
 ﻿using System;
 using System.Collections.Generic;
 using Infrastructure.EQ.TextParser;
+using Lantern.EQ.Audio;
 using Lantern.EQ.Editor.Helpers;
+using Lantern.EQ.Lantern;
 using UnityEditor;
 using UnityEngine;
 
-namespace Lantern.Editor.Importers
+namespace Lantern.EQ.Editor.Importers
 {
     public static class SoundImporter
     {
-        public static void CreateSoundInstances(string soundTextAssetPath, Transform soundRoot)
+        public static void CreateSoundInstances(string sound2dTextAssetPath, string sound3dTextAssetPath,
+            Transform soundRoot)
         {
-            string soundInstanceList = string.Empty;
+            ImportHelper.LoadTextAsset(sound2dTextAssetPath, out var sound2dInstanceList);
 
-            ImportHelper.LoadTextAsset(soundTextAssetPath, out soundInstanceList);
-
-            if (string.IsNullOrEmpty(soundInstanceList))
+            if (!string.IsNullOrEmpty(sound2dInstanceList))
             {
-                return;
+                GameObject sound2dTriggerPrefab = GetSound2dTriggerPrefab();
+
+                if (sound2dTriggerPrefab == null)
+                {
+                    Debug.LogError("Could not load sound 2d trigger!");
+                }
+                else
+                {
+                    var parsedSound2dLines = TextParser.ParseTextByDelimitedLines(sound2dInstanceList, ',');
+
+                    foreach (var instance in parsedSound2dLines)
+                    {
+                        CreateSound2dInstance(sound2dTriggerPrefab, instance, soundRoot);
+                    }
+                }
             }
 
-            GameObject sound2dTriggerPrefab = GetSound2dTriggerPrefab();
-            GameObject sound3dTriggerPrefab = GetSound3dTriggerPrefab();
+            ImportHelper.LoadTextAsset(sound3dTextAssetPath, out var sound3dInstanceList);
 
-            if (sound2dTriggerPrefab == null || sound3dTriggerPrefab == null)
+            if (!string.IsNullOrEmpty(sound3dInstanceList))
             {
-                Debug.LogError("SoundImporter: Cannot get sound trigger prefabs.");
-                return;
-            }
+                GameObject sound3dTriggerPrefab = GetSound3dTriggerPrefab();
 
-            var parsedSoundLines = TextParser.ParseTextByDelimitedLines(soundInstanceList, ',');
+                if (sound3dTriggerPrefab == null)
+                {
+                    Debug.LogError("Could not load sound 2d trigger!");
+                }
+                else
+                {
+                    var parsedSound3dLines = TextParser.ParseTextByDelimitedLines(sound3dInstanceList, ',');
 
-            foreach (var instance in parsedSoundLines)
-            {
-                CreateSoundInstance(sound2dTriggerPrefab,
-                    sound3dTriggerPrefab, instance, soundRoot);
+                    foreach (var instance in parsedSound3dLines)
+                    {
+                        CreateSound3dInstance(sound3dTriggerPrefab, instance, soundRoot);
+                    }
+                }
             }
         }
 
-        private static void CreateSoundInstance(GameObject sound2dTriggerPrefab,
-            GameObject sound3dTriggerPrefab, List<string> soundData, Transform parent)
+        private static void CreateSound2dInstance(GameObject sound2dTriggerPrefab, List<string> soundLines, Transform parent)
         {
-            if (soundData.Count != 10)
+            if (soundLines.Count != 11)
             {
-                Debug.LogError("SoundImporter: Unable to parse sound line. Unexpected item count");
+                Debug.LogError("SoundImporter: Unable to parse sound2D. Unexpected argument count");
                 return;
             }
 
-            int soundType = Convert.ToInt32(soundData[0]);
-            float x = Convert.ToSingle(soundData[1]);
-            float y = Convert.ToSingle(soundData[2]);
-            float z = Convert.ToSingle(soundData[3]);
-            float radius = Convert.ToSingle(soundData[4]);
-            string clipNameDay = soundData[5];
-            string clipNameNight = soundData[6];
-            int cooldownDay = Convert.ToInt32(soundData[7]);
-            int cooldownNight = Convert.ToInt32(soundData[8]);
-            int cooldownRandom = Convert.ToInt32(soundData[9]);
+            float x = Convert.ToSingle(soundLines[0]);
+            float y = Convert.ToSingle(soundLines[1]);
+            float z = Convert.ToSingle(soundLines[2]);
+            float radius = Convert.ToSingle(soundLines[3]);
+            string clipNameDay = soundLines[4];
+            string clipNameNight = soundLines[5];
+            int cooldownDay = Convert.ToInt32(soundLines[6]);
+            int cooldownNight = Convert.ToInt32(soundLines[7]);
+            int cooldownRandom = Convert.ToInt32(soundLines[8]);
+            float volumeDay = Convert.ToSingle(soundLines[9]);
+            float volumeNight = Convert.ToSingle(soundLines[10]);
 
-            string dayClipPath = PathHelper.GetAssetBundleContentPath()+ "Sound/" + clipNameDay + ".ogg";
-            AudioClip dayClip = (AudioClip) AssetDatabase.LoadAssetAtPath(dayClipPath, typeof(AudioClip));
-
-            string nightClipPath = PathHelper.GetAssetBundleContentPath()+ "Sound/" + clipNameNight + ".ogg";
-            AudioClip nightClip = (AudioClip) AssetDatabase.LoadAssetAtPath(nightClipPath, typeof(AudioClip));
-
-            if (dayClip == null && nightClip == null)
-            {
-                if (clipNameDay != string.Empty)
-                {
-                    Debug.LogError("SoundImporter: Unable to load day clip: " + clipNameDay);
-                }
-
-                if (clipNameNight != string.Empty)
-                {
-                    Debug.LogError("SoundImporter: Unable to load night clip: " + clipNameNight);
-                }
-
-                return;
-            }
-
-            GameObject soundTrigger =
-                (GameObject) PrefabUtility.InstantiatePrefab(soundType == 0
-                    ? sound2dTriggerPrefab
-                    : sound3dTriggerPrefab);
-
+            GameObject soundTrigger = (GameObject)PrefabUtility.InstantiatePrefab(sound2dTriggerPrefab);
             soundTrigger.transform.parent = parent;
             soundTrigger.transform.position = new Vector3(x, y, z);
 
-            /*if (soundType == 0)
+            var soundData = new Sound2dData
             {
-                var sound2dScript = soundTrigger.GetComponent<Sound2dTrigger>();
-                sound2dScript.SetData(dayClip, nightClip, radius, cooldownDay, cooldownNight, cooldownRandom);
+                ClipNameDay = clipNameDay,
+                ClipNameNight = clipNameNight,
+                CooldownDay = cooldownDay,
+                CooldownNight = cooldownNight,
+                CooldownRandom = cooldownRandom,
+                VolumeDay = volumeDay,
+                VolumeNight = volumeNight
+            };
+
+            var script = soundTrigger.GetComponent<SoundTrigger2d>();
+            script.SetData(soundData, LanternTags.Player, radius);
+        }
+
+        private static void CreateSound3dInstance(GameObject sound3dTriggerPrefab, List<string> soundLines, Transform parent)
+        {
+            if (soundLines.Count != 9)
+            {
+                Debug.LogError("SoundImporter: Unable to parse sound3D. Unexpected argument count");
+                return;
             }
-            else
+
+            float x = Convert.ToSingle(soundLines[0]);
+            float y = Convert.ToSingle(soundLines[1]);
+            float z = Convert.ToSingle(soundLines[2]);
+            float radius = Convert.ToSingle(soundLines[3]);
+            string clipName = soundLines[4];
+            int cooldown = Convert.ToInt32(soundLines[5]);
+            int cooldownRandom = Convert.ToInt32(soundLines[6]);
+            float volume = Convert.ToSingle(soundLines[7]);
+            int multiplier = Convert.ToInt32(soundLines[8]);
+
+            GameObject soundTrigger = (GameObject)PrefabUtility.InstantiatePrefab(sound3dTriggerPrefab);
+            soundTrigger.transform.parent = parent;
+            soundTrigger.transform.position = new Vector3(x, y, z);
+
+            var soundData = new Sound3dData
             {
-                var sound3dScript = soundTrigger.GetComponent<Sound3dTrigger>();
-                sound3dScript.SetData(dayClip, radius, cooldownDay, cooldownNight, cooldownRandom);
-            }*/
+                ClipName = clipName,
+                Cooldown = cooldown,
+                CooldownRandom = cooldownRandom,
+                Volume = volume,
+                Multiplier = multiplier
+            };
+
+            var script = soundTrigger.GetComponent<SoundTrigger3d>();
+            script.SetData(soundData, LanternTags.Player, radius);
         }
 
         private static GameObject GetSound2dTriggerPrefab()
         {
-            var soundTriggerPrefabPath = "Assets/Content/Prefabs/Sound2dTrigger.Prefab";
-            return AssetDatabase.LoadAssetAtPath<GameObject>(soundTriggerPrefabPath);
+            var prefabPath = "Assets/Content/Features/Game/SoundTrigger2d.prefab";
+            return AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
         }
 
         private static GameObject GetSound3dTriggerPrefab()
         {
-            var soundTriggerPrefabPath = "Assets/Content/Prefabs/Sound3dTrigger.Prefab";
-            return AssetDatabase.LoadAssetAtPath<GameObject>(soundTriggerPrefabPath);
+            var prefabPath = "Assets/Content/Features/Game/SoundTrigger3d.prefab";
+            return AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
         }
     }
 }

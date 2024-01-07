@@ -34,6 +34,8 @@ namespace Lantern.EQ.Lighting
 
         // TODO: Replace as property blocks no longer with with URP
         private MaterialPropertyBlock _block;
+        private List<Material> _sharedMaterials = new List<Material>();
+        private int _dynamicSunlightID = Shader.PropertyToID("_DynamicSunlight");
 
         private Vector3 _captureHeight;
         private bool _isInstantSunlight;
@@ -52,9 +54,6 @@ namespace Lantern.EQ.Lighting
             _sunlightRecaptureCurrent = Random.Range(0f, 0.5f);
 
             ForceUpdate();
-
-            // Deprecate post 0.1.5 - MPB do not work with URP
-            _block = new MaterialPropertyBlock();
         }
 
         /// <summary>
@@ -110,6 +109,8 @@ namespace Lantern.EQ.Lighting
                 }
             }
 
+            _block ??= new MaterialPropertyBlock();
+
             foreach (var renderer in _renderers)
             {
                 if (!renderer.gameObject.activeSelf)
@@ -117,11 +118,12 @@ namespace Lantern.EQ.Lighting
                     continue;
                 }
 
-                for (int i = 0; i < renderer.sharedMaterials.Length; ++i)
+                renderer.GetSharedMaterials(_sharedMaterials);
+
+                for (int i = 0; i < _sharedMaterials.Count; ++i)
                 {
-                    _block = new MaterialPropertyBlock();
                     renderer.GetPropertyBlock(_block, i);
-                    _block.SetFloat("_DynamicSunlight", _lastSunlight);
+                    _block.SetFloat(_dynamicSunlightID, _lastSunlight);
                     renderer.SetPropertyBlock(_block, i);
                 }
             }

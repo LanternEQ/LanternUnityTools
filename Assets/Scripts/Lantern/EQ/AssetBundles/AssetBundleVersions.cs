@@ -13,25 +13,26 @@ namespace Lantern.EQ.AssetBundles
         public static Dictionary<LanternAssetBundleId, Version> Versions =
             new Dictionary<LanternAssetBundleId, Version>()
             {
-                {LanternAssetBundleId.Characters, new Version(0, 1, 6)},
-                {LanternAssetBundleId.Construct, new Version(0, 1, 6)},
-                {LanternAssetBundleId.UI_Lantern, new Version(0, 1, 6)},
-                {LanternAssetBundleId.ClientData, new Version(0, 1, 6)},
-                {LanternAssetBundleId.Zones, new Version(0, 1, 5)},
-                {LanternAssetBundleId.Equipment, new Version(0, 1, 5)},
-                {LanternAssetBundleId.Sprites, new Version(0, 1, 5)},
-                {LanternAssetBundleId.Startup, new Version(0, 1, 5)},
-                {LanternAssetBundleId.Sky, new Version(0, 1, 5)},
-                {LanternAssetBundleId.CharacterSelect_Classic, new Version(0, 1, 5)},
-                {LanternAssetBundleId.Defaults, new Version(0, 1, 5)},
-                {LanternAssetBundleId.Sound, new Version(0, 1, 0)},
-                {LanternAssetBundleId.Music, new Version(0, 1, 0)},
+                {LanternAssetBundleId.Music_Audio, new Version(0, 1, 7)},
+                {LanternAssetBundleId.Music_Midi, new Version(0, 1, 7)},
+                {LanternAssetBundleId.Characters, new Version(0, 1, 7)},
+                {LanternAssetBundleId.Construct, new Version(0, 1, 7)},
+                {LanternAssetBundleId.UI_Lantern, new Version(0, 1, 7)},
+                {LanternAssetBundleId.ClientData, new Version(0, 1, 7)},
+                {LanternAssetBundleId.Zones, new Version(0, 1, 7)},
+                {LanternAssetBundleId.Equipment, new Version(0, 1, 7)},
+                {LanternAssetBundleId.Sprites, new Version(0, 1, 7)},
+                {LanternAssetBundleId.Startup, new Version(0, 1, 7)},
+                {LanternAssetBundleId.Sky, new Version(0, 1, 7)},
+                {LanternAssetBundleId.CharacterSelect_Classic, new Version(0, 1, 7)},
+                {LanternAssetBundleId.Defaults, new Version(0, 1, 7)},
+                {LanternAssetBundleId.Sound, new Version(0, 1, 7)},
 
                 // Unused/old
-                {LanternAssetBundleId.UI_Titanium, new Version(0, 1, 4)},
-                {LanternAssetBundleId.UI_Debug, new Version(0, 1, 4)},
-                {LanternAssetBundleId.Login_Dev, new Version(0, 1, 5)},
-                {LanternAssetBundleId.Login_Classic, new Version(0, 1, 5)},
+                {LanternAssetBundleId.UI_Titanium, new Version(0, 1, 7)},
+                {LanternAssetBundleId.UI_Debug, new Version(0, 1, 7)},
+                {LanternAssetBundleId.Login_Dev, new Version(0, 1, 7)},
+                {LanternAssetBundleId.Login_Classic, new Version(0, 1, 7)},
 
                 // Removed
                 //{LanternAssetBundleId.CharacterSelect_Dev, new Version(0, 1, 5)},

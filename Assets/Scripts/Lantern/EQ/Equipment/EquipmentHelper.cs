@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Lantern.EQ.Animation;
+using Lantern.EQ.Audio;
 
 namespace Lantern.EQ.Equipment
 {
@@ -62,5 +63,54 @@ namespace Lantern.EQ.Equipment
             { "ikm", "IT635" },
             { "ikf", "IT630" },
         };
+
+        public static EquipmentSound GetSoundForEquipment(int itemNumber)
+        {
+            switch (itemNumber)
+            {
+                case 0:
+                    return EquipmentSound.HandToHand;
+                case 4:
+                    return EquipmentSound.Bow;
+                case 61:
+                    return EquipmentSound.Whip;
+                case 1:
+                case 2:
+                case 3:
+                case 5:
+                case 7:
+                case 9:
+                case 16:
+                case 17:
+                case 19:
+                case 20:
+                case 23:
+                case 24:
+                case 25:
+                case 30:
+                case 34:
+                case 35:
+                case 37:
+                case 39:
+                case 40:
+                case 41:
+                case 42:
+                case 43:
+                case 44:
+                case 50:
+                case 51:
+                case 53:
+                case 57:
+                case 58:
+                case 59:
+                case 60:
+                case 62:
+                    return EquipmentSound.Slashing;
+                case int x when x is >= 200 and <= 300:
+                    return EquipmentSound.Bash;
+                default:
+                    return EquipmentSound.Blunt;
+            }
+        }
     }
 }

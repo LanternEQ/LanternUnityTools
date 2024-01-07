@@ -4,9 +4,7 @@ using System.Linq;
 using Infrastructure.EQ.TextParser;
 using Lantern.EQ.Animation;
 using Lantern.EQ.Characters;
-using Lantern.EQ.Data;
 using Lantern.EQ.Editor.Helpers;
-using Lantern.EQ.Editor.Importers;
 using Lantern.EQ.Equipment;
 using Lantern.EQ.Helpers;
 using Lantern.EQ.Lighting;
@@ -14,7 +12,7 @@ using Lantern.EQ.Sound;
 using UnityEditor;
 using UnityEngine;
 
-namespace Lantern.Editor.Importers
+namespace Lantern.EQ.Editor.Importers
 {
     public class CharacterImporter : EditorWindow
     {
@@ -114,7 +112,7 @@ namespace Lantern.Editor.Importers
             //LoadCharacterSounds(obj, _modelSounds);
 
             characterModel.SetReferences(null, null, null, lightSetter,
-                obj.GetComponent<CharacterSounds>(),
+                obj.GetComponent<CharacterSoundLogic>(),
                 obj.GetComponent<CharacterAnimationLogic>());
         }
 
@@ -132,12 +130,13 @@ namespace Lantern.Editor.Importers
             ap.FindAttachPoints();
             var e3d = skeleton.AddComponent<Equipment3dHandler>();
             e3d.SetSkeletonAttachPoints(ap);
+            skeleton.AddComponent<CharacterSoundLogic>();
 
             // TODO: Is this still needed?
             var animatedObject = skeleton.GetComponent<ObjectAnimation>();
             DestroyImmediate(animatedObject);
 
-            var animation = skeleton.GetComponent<Animation>();
+            var animation = skeleton.GetComponent<UnityEngine.Animation>();
 
             // Find all meshes for this model
             string path = _zoneShortname == "characters"
@@ -180,11 +179,11 @@ namespace Lantern.Editor.Importers
             LoadCharacterSounds(skeleton, _modelSounds);
 
             characterModel.SetReferences(ap, variantHandler as Equipment2dHandler, e3d, vertexColorDebug,
-                skeleton.GetComponent<CharacterSounds>(),
+                skeleton.GetComponent<CharacterSoundLogic>(),
                 skeleton.GetComponent<CharacterAnimationLogic>());
         }
 
-        private static void LoadModelAnimations(Animation animation, string animationBase, AssetImportType type)
+        private static void LoadModelAnimations(UnityEngine.Animation animation, string animationBase, AssetImportType type)
         {
             string prefix = animationBase + "_";
 
@@ -248,18 +247,18 @@ namespace Lantern.Editor.Importers
                 return;
             }
 
-            GetEquipmentVariantsForIndex(0, 0, mainMesh, pvh);
-            GetEquipmentVariantsForIndex(1, 1, mainMesh, pvh);
-            GetEquipmentVariantsForIndex(2, 2, mainMesh, pvh);
-            GetEquipmentVariantsForIndex(3, 3, mainMesh, pvh);
-            GetEquipmentVariantsForIndex(4, 4, mainMesh, pvh);
-            GetEquipmentVariantsForIndex(17, 17, mainMesh, pvh);
-            GetEquipmentVariantsForIndex(18, 18, mainMesh, pvh);
-            GetEquipmentVariantsForIndex(19, 19, mainMesh, pvh);
-            GetEquipmentVariantsForIndex(20, 20, mainMesh, pvh);
-            GetEquipmentVariantsForIndex(21, 21, mainMesh, pvh);
-            GetEquipmentVariantsForIndex(22, 22, mainMesh, pvh);
-            GetEquipmentVariantsForIndex(23, 23, mainMesh, pvh);
+            GetEquipmentVariantsForIndex(modelAsset, 0, 0, mainMesh, pvh);
+            GetEquipmentVariantsForIndex(modelAsset, 1, 1, mainMesh, pvh);
+            GetEquipmentVariantsForIndex(modelAsset, 2, 2, mainMesh, pvh);
+            GetEquipmentVariantsForIndex(modelAsset, 3, 3, mainMesh, pvh);
+            GetEquipmentVariantsForIndex(modelAsset, 4, 4, mainMesh, pvh);
+            GetEquipmentVariantsForIndex(modelAsset, 17, 17, mainMesh, pvh);
+            GetEquipmentVariantsForIndex(modelAsset, 18, 18, mainMesh, pvh);
+            GetEquipmentVariantsForIndex(modelAsset, 19, 19, mainMesh, pvh);
+            GetEquipmentVariantsForIndex(modelAsset, 20, 20, mainMesh, pvh);
+            GetEquipmentVariantsForIndex(modelAsset, 21, 21, mainMesh, pvh);
+            GetEquipmentVariantsForIndex(modelAsset, 22, 22, mainMesh, pvh);
+            GetEquipmentVariantsForIndex(modelAsset, 23, 23, mainMesh, pvh);
 
             var robeMesh = pvh.GetRobeMesh();
 
@@ -269,29 +268,29 @@ namespace Lantern.Editor.Importers
             }
 
             // First skin has all materials (hands + feet)
-            GetEquipmentVariantsForIndex(10, 4, robeMesh, pvh);
-            GetEquipmentVariantsForIndex(11, 5, robeMesh, pvh, "clk");
-            GetEquipmentVariantsForIndex(12, 6, robeMesh, pvh, "clk");
-            GetEquipmentVariantsForIndex(13, 7, robeMesh, pvh, "clk");
-            GetEquipmentVariantsForIndex(14, 8, robeMesh, pvh, "clk");
-            GetEquipmentVariantsForIndex(15, 9, robeMesh, pvh, "clk");
-            GetEquipmentVariantsForIndex(16, 10, robeMesh, pvh, "clk");
+            GetEquipmentVariantsForIndex(modelAsset, 10, 4, robeMesh, pvh);
+            GetEquipmentVariantsForIndex(modelAsset, 11, 5, robeMesh, pvh, "clk");
+            GetEquipmentVariantsForIndex(modelAsset, 12, 6, robeMesh, pvh, "clk");
+            GetEquipmentVariantsForIndex(modelAsset, 13, 7, robeMesh, pvh, "clk");
+            GetEquipmentVariantsForIndex(modelAsset, 14, 8, robeMesh, pvh, "clk");
+            GetEquipmentVariantsForIndex(modelAsset, 15, 9, robeMesh, pvh, "clk");
+            GetEquipmentVariantsForIndex(modelAsset, 16, 10, robeMesh, pvh, "clk");
 
             if (modelAsset == "erm" || modelAsset == "erf")
             {
                 var headMesh = pvh.GetHeadMesh(0);
-                GetEquipmentVariantsForIndex(0, 0, headMesh, pvh);
-                GetEquipmentVariantsForIndex(10, 4, headMesh, pvh, "clk");
-                GetEquipmentVariantsForIndex(11, 5, headMesh, pvh, "clk");
-                GetEquipmentVariantsForIndex(12, 6, headMesh, pvh, "clk");
-                GetEquipmentVariantsForIndex(13, 7, headMesh, pvh, "clk");
-                GetEquipmentVariantsForIndex(14, 8, headMesh, pvh, "clk");
-                GetEquipmentVariantsForIndex(15, 9, headMesh, pvh, "clk");
-                GetEquipmentVariantsForIndex(16, 10, headMesh, pvh, "clk");
+                GetEquipmentVariantsForIndex(modelAsset, 0, 0, headMesh, pvh);
+                GetEquipmentVariantsForIndex(modelAsset, 10, 4, headMesh, pvh, "clk");
+                GetEquipmentVariantsForIndex(modelAsset, 11, 5, headMesh, pvh, "clk");
+                GetEquipmentVariantsForIndex(modelAsset, 12, 6, headMesh, pvh, "clk");
+                GetEquipmentVariantsForIndex(modelAsset, 13, 7, headMesh, pvh, "clk");
+                GetEquipmentVariantsForIndex(modelAsset, 14, 8, headMesh, pvh, "clk");
+                GetEquipmentVariantsForIndex(modelAsset, 15, 9, headMesh, pvh, "clk");
+                GetEquipmentVariantsForIndex(modelAsset, 16, 10, headMesh, pvh, "clk");
             }
         }
 
-        private static void GetEquipmentVariantsForIndex(int armorIndex, int textureIndex, SkinnedMeshRenderer mesh,
+        private static void GetEquipmentVariantsForIndex(string modelAsset, int armorIndex, int textureIndex, SkinnedMeshRenderer mesh,
             Equipment2dHandler handler, string requiredString = "")
         {
             var materials = mesh.sharedMaterials;
@@ -299,12 +298,13 @@ namespace Lantern.Editor.Importers
 
             for (int i = 0; i < materials.Length; i++)
             {
-                if (materials[i] == null)
+                var material = materials[i];
+                if (material == null)
                 {
                     continue;
                 }
 
-                textures[i] = TextureHelper.FindEquipmentVariant(materials[i].GetTexture("_BaseMap"), textureIndex,
+                textures[i] = TextureHelper.FindEquipmentVariant(modelAsset, material.GetTexture("_BaseMap"), textureIndex,
                     requiredString);
             }
 

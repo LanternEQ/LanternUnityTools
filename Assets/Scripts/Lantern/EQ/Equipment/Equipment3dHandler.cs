@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Lantern.EQ.Animation;
+using Lantern.EQ.Audio;
 using Lantern.EQ.Helpers;
 using Lantern.EQ.Lighting;
 using UnityEngine;
@@ -23,6 +24,9 @@ namespace Lantern.EQ.Equipment
         private Dictionary<Equipment3dSlot, EquipmentModel> _spawnedEquipment;
         private int _renderLayer;
         private Action<Renderer> _updateModelCallback;
+
+        public EquipmentSound EquipmentSoundPrimary;
+        public EquipmentSound EquipmentSoundSecondary;
 
         private void Awake()
         {
@@ -107,6 +111,13 @@ namespace Lantern.EQ.Equipment
                 {
                     _updateModelCallback?.Invoke(rend);
                 }
+            }
+
+            if (point == Equipment3dSlot.MainHand)
+            {
+                var equipmentName = item.name;
+                int number = Convert.ToInt32(equipmentName.Replace("it", string.Empty));
+                EquipmentHelper.GetSoundForEquipment(number);
             }
 
             UpdateLayerValues();
@@ -232,6 +243,24 @@ namespace Lantern.EQ.Equipment
         public void SetModelUpdateCallback(Action<Renderer> onNewActiveModel)
         {
             _updateModelCallback = onNewActiveModel;
+        }
+
+        public void PlayAnimation(AnimationType animationType)
+        {
+            if (_spawnedEquipment == null)
+            {
+                return;
+            }
+
+            foreach (var equipment in _spawnedEquipment.Values)
+            {
+                if (equipment.EquipmentAnimation == null)
+                {
+                    continue;
+                }
+
+                equipment.EquipmentAnimation.Play(animationType);
+            }
         }
     }
 }

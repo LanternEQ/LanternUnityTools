@@ -1,5 +1,5 @@
 ﻿using System;
-using Lantern.Editor.Importers;
+using Lantern.EQ.Editor.Importers;
 using UnityEngine;
 
 namespace Lantern.EQ.Editor.Helpers
