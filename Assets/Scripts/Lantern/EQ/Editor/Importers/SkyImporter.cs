@@ -8,17 +8,50 @@ using UnityEngine;
 
 namespace Lantern.EQ.Editor.Importers
 {
-    public static class SkyImporter
+    public class SkyImporter : LanternEditorWindow
     {
-        [MenuItem("EQ/Import/Sky", false, 50)]
-        public static void ImportSky()
+        private static readonly List<string> Text1 = new()
         {
-            if (!EditorUtility.DisplayDialog("Import Sky",
-                "Are you sure you want to import the sky?", "Yes", "No"))
-            {
-                return;
-            }
+            "This process creates the sky prefab from intermediate EverQuest data.",
+            "Importing the sky takes around one minute.",
+        };
 
+        private static readonly List<string> Text2 = new()
+        {
+            "EverQuest sky data must be located in:",
+            "\fAssets/EQAssets/sky/",
+        };
+
+        private static readonly List<string> Text3 = new()
+        {
+            "Sky prefab will be output to:",
+            "\fAssets/Content/AssetBundleContent/Sky/"
+        };
+
+        [MenuItem("EQ/Assets/Import Sky &s", false, 4)]
+        public static void ShowImportDialog()
+        {
+            GetWindow<SkyImporter>("Import Sky", typeof(EditorWindow));
+        }
+
+        /// <summary>
+        /// Draws the settings window for the character importer
+        /// </summary>
+        private void OnGUI()
+        {
+            DrawInfoBox(Text1, "d_console.infoicon");
+            DrawInfoBox(Text2, "d_Collab.FolderConflict");
+            DrawInfoBox(Text3, "d_Collab.FolderMoved");
+            DrawHorizontalLine();
+
+            if (DrawButton("Import"))
+            {
+                ImportSky();
+            }
+        }
+
+        private static void ImportSky()
+        {
             var startTime = EditorApplication.timeSinceStartup;
 
             var meshesToCreate = new List<string>

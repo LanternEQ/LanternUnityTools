@@ -9,24 +9,54 @@ using UnityEngine;
 
 namespace Lantern.EQ.Editor.Importers
 {
-    public static class EquipmentImporter
+    public class EquipmentImporter : LanternEditorWindow
     {
         private static Dictionary<string, AnimationClip> _animations;
+
+        private static readonly List<string> Text1 = new()
+        {
+            "This process creates equipment prefabs from intermediate EverQuest data.",
+            "Importing all equipment takes around ten minutes.",
+        };
+
+        private static readonly List<string> Text2 = new()
+        {
+            "EverQuest equipment data must be located in:",
+            "\fAssets/EQAssets/equipment/",
+        };
+
+        private static readonly List<string> Text3 = new()
+        {
+            "Equipment prefabs will be output to:",
+            "\fAssets/Content/AssetBundleContent/Equipment/"
+        };
 
         /// <summary>
         /// Unity relative paths to animation text files
         /// </summary>
         private static List<string> _animationPaths;
 
-        [MenuItem("EQ/Import/Equipment", false, 50)]
-        public static void ImportEquipment()
+        [MenuItem("EQ/Assets/Import Equipment &e", false, 3)]
+        public static void ShowImportDialog()
         {
-            if (!EditorUtility.DisplayDialog("Import Equipment",
-                "Are you sure you want to import equipment?", "Yes", "No"))
-            {
-                return;
-            }
+            GetWindow<EquipmentImporter>("Import Equipment", typeof(EditorWindow));
+        }
 
+        private void OnGUI()
+        {
+            DrawInfoBox(Text1, "d_console.infoicon");
+            DrawInfoBox(Text2, "d_Collab.FolderConflict");
+            DrawInfoBox(Text3, "d_Collab.FolderMoved");
+            DrawHorizontalLine();
+
+            if (DrawButton("Import"))
+            {
+                ImportEquipment();
+            }
+        }
+
+        private static void ImportEquipment()
+        {
             _animations = new Dictionary<string, AnimationClip>();
             _animationPaths = AnimationImporter.LoadAnimationPaths("equipment", AssetImportType.Equipment);
 
@@ -148,7 +178,7 @@ namespace Lantern.EQ.Editor.Importers
             mf.sharedMesh = newMesh;
             savePath = PathHelper.GetSavePath("equipment", AssetImportType.Equipment) + $"{hdAssetName}.prefab";
             PrefabUtility.SaveAsPrefabAsset(newPrefab, savePath);
-            Object.DestroyImmediate(newPrefab);
+            DestroyImmediate(newPrefab);
         }
 
         private static void PostProcessSkeletal(GameObject go)

@@ -22,6 +22,7 @@
         public static int SpellEffectCount = 12;
         public static int SpellLevelLimit = 61;
         public static int RaceCount = 198;
+        public static int SkyCount = 5;
 
         // Movement
         public static float Velocity = 42.65f;
@@ -85,5 +86,8 @@
         public static int CopperPerPlatinum = 1000;
         public static int CopperPerGold = 100;
         public static int CopperPerSilver = 10;
+
+        // Doors
+        public static int DoorOpenTypeInvisible = 54;
     }
 }

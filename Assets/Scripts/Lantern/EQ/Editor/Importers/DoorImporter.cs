@@ -1,104 +1,41 @@
-﻿namespace Lantern.EQ.Editor.Importers
+﻿using System.IO;
+using Lantern.EQ.Data;
+using Lantern.EQ.Editor.Helpers;
+using Lantern.EQ.Helpers;
+using Lantern.EQ.Lantern;
+using Lantern.EQ.Viewers;
+using UnityEditor;
+using UnityEngine;
+
+namespace Lantern.EQ.Editor.Importers
 {
     public static class DoorImporter
-    {/*
-        public static void CreateDoorInstances(string shortname, ZoneMeshSunlightValues sunlightValues, Transform doorRoot)
+    {
+        public static void CreateDoorInstances(string shortname, Transform doorRoot)
         {
-            if (sunlightValues == null)
+            var databaseLoader = new DatabaseLoader(Path.Combine(Application.streamingAssetsPath, "Database"));
+            var doors = databaseLoader.GetDatabase()
+                ?.Table<Doors>().Where(x => x.zone == shortname && x.opentype != EqConstants.DoorOpenTypeInvisible);
+
+            foreach (var d in doors)
             {
-                return;
-            }
+                string prefabLoadPath = PathHelper.GetSavePath(shortname, AssetImportType.Objects) + d.name + ".prefab";
+                var loadedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabLoadPath);
 
-            var doorService = ServiceFactory.Get<DoorService>();
-
-            if (doorService == null)
-            {
-                var bootstrapper = new ServiceBootstrapper(false, null);
-
-                doorService = ServiceFactory.Get<DoorService>();
-
-                if (doorService == null)
+                if (loadedPrefab == null)
                 {
-                    Debug.LogError("ZoneImporter: Unable to load zone doors. Cannot bootstrap services!");
-                    return;
-                }
-            }
-
-            IEnumerable<Doors> doors = doorService.GetDoorsForZone(shortname);
-
-            Dictionary<int, ClickableDoor> spawnedClickableDoors = new Dictionary<int, ClickableDoor>();
-
-            foreach (Doors door in doors)
-            {
-                // Skip invisible doors
-                if (door.opentype == 54)
-                {
+                    Debug.LogError($"Unable to load door prefab: {d.name}");
                     continue;
                 }
 
-                string prefabLoadPath = PathHelper.GetSavePath(shortname, AssetImportType.Objects) + door.name + ".prefab";
-
-                // Get the door mesh
-                GameObject loadedDoor = AssetDatabase.LoadAssetAtPath<GameObject>(prefabLoadPath);
-
-                if (loadedDoor == null)
-                {
-                    Debug.LogError("ZoneImporter: Unable to find the door object asset: " +
-                                   door.name + ".obj");
-                    continue;
-                }
-
-                GameObject spawnedDoor = (GameObject) PrefabUtility.InstantiatePrefab(loadedDoor, doorRoot.transform);
-
-                spawnedDoor.layer = LanternLayers.Door;
-
-                spawnedDoor.transform.position = new Vector3(door.pos_y,
-                    door.pos_z, door.pos_x);
-
-                spawnedDoor = ImportHelper.FixModelParent(spawnedDoor, doorRoot.transform);
-
-                ImportHelper.FixCloneNameAppend(spawnedDoor);
-
-                spawnedDoor.transform.rotation =
-                    Quaternion.Euler(0.0f, RotationHelper.GetEqToLanternRotation(-door.heading), 0.0f);
-
-                DoorId doorScript = spawnedDoor.AddComponent<DoorId>();
-                doorScript.Id = door.id;
-
-                spawnedDoor.tag = "Clickable";
-
-                ClickableDoor cd = spawnedDoor.AddComponent<ClickableDoor>();
-                cd.SetLockPick(door.lockpick);
-                cd.SetKeyItem(door.keyitem);
-                cd.SetTriggerDoor(door.triggerdoor);
-                cd.SetParameter(door.door_param);
-                cd.SetWidth(door.width);
-                cd.SetHeading(door.heading);
-                cd.SetOpenType(door.opentype); // Perform Last
-
-                spawnedClickableDoors.Add(door.doorid, cd);
-
-                var vcsn = spawnedDoor.GetComponent<VertexColorSetterNew>();
-                List<Color> colors = new List<Color>();
-                var zoneValues = Object.FindObjectOfType<ZoneMeshSunlightValues>();
-                RaycastHelper.TryGetSunlightValueRuntime(spawnedDoor.transform.position, zoneValues, out var sunlightA);
-                colors.Add(new Color(0, 0, 0, sunlightA));
-                vcsn.SetColorData(colors);
+                var spawnedObject = Object.Instantiate(loadedPrefab);
+                spawnedObject.transform.position =
+                    new Vector3(d.pos_y, d.pos_z, d.pos_x);
+                spawnedObject.transform.rotation =
+                    Quaternion.Euler(0.0f, RotationHelper.GetEqToLanternRotation(-d.heading), 0.0f);
+                spawnedObject.transform.localScale = Vector3.one;
+                spawnedObject.transform.parent = doorRoot.transform;
             }
-
-            // Loop Thru Spawned Doors and Link Any Triggered Doors
-            foreach (ClickableDoor cd in spawnedClickableDoors.Values)
-            {
-                int triggeredDoor = cd.GetTriggerDoor();
-
-                if (triggeredDoor != 0)
-                {
-                    if (spawnedClickableDoors.ContainsKey(triggeredDoor))
-                    {
-                        cd.SetLinkedDoor(spawnedClickableDoors[triggeredDoor]);
-                    }
-                }
-            }
-        }*/
+        }
     }
 }

@@ -6,7 +6,7 @@ namespace Lantern.EQ.Editor.EqAssetCopy
 {
     public static class AssetList
     {
-        public static List<AssetToCopy> AssetsToCopy = new List<AssetToCopy>()
+        public static List<AssetToCopy> AssetsToCopy = new()
         {
             new AssetToCopy
             {
@@ -109,7 +109,7 @@ namespace Lantern.EQ.Editor.EqAssetCopy
             },
         };
 
-        public static List<SpritesSheetsToSplice> SpriteSheetsToSplice = new List<SpritesSheetsToSplice>
+        public static List<SpritesSheetsToSplice> SpriteSheetsToSplice = new()
         {
             new SpritesSheetsToSplice
             {
@@ -148,7 +148,7 @@ namespace Lantern.EQ.Editor.EqAssetCopy
             }
         };
 
-        public static List<SpriteSheetsToCreate> SpriteSheetsToCreate = new List<SpriteSheetsToCreate>
+        public static List<SpriteSheetsToCreate> SpriteSheetsToCreate = new()
         {
             new SpriteSheetsToCreate
             {

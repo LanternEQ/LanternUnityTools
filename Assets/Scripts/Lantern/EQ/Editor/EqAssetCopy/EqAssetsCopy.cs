@@ -6,10 +6,45 @@ using UnityEngine;
 
 namespace Lantern.EQ.Editor.EqAssetCopy
 {
-    public static class EqAssetCopier
+    public class EqAssetCopier : LanternEditorWindow
     {
-        [MenuItem("EQ/Copy EQ Assets", false, 30)]
-        public static void Copy()
+        private static readonly List<string> Text1 = new()
+        {
+            "This process copies and prepares exported EverQuest assets for LanternEQ runtime use. Created bundles include:",
+            "\fCharacterSelect_Classic",
+            "\fClientData",
+            "\fMusic_Midi",
+            "\fSound",
+            "\fSprites",
+            "\fStartup",
+            "This usually takes around 5-10 minutes."
+        };
+
+        private static readonly List<string> Text2 = new()
+        {
+            "All EverQuest assets must be located in:",
+            "\fAssets/EQAssets/",
+        };
+
+        [MenuItem("EQ/Assets/Copy Assets", false, 20)]
+        public static void ShowImportDialog()
+        {
+            GetWindow<EqAssetCopier>("Copy Assets", typeof(EditorWindow));
+        }
+
+        private void OnGUI()
+        {
+            DrawInfoBox(Text1, "d_console.infoicon");
+            DrawInfoBox(Text2, "d_Collab.FolderConflict");
+            DrawHorizontalLine();
+
+            if (DrawButton("Start Copy"))
+            {
+                Copy();
+            }
+        }
+
+        private static void Copy()
         {
             if (Application.isPlaying)
             {
@@ -67,7 +102,7 @@ namespace Lantern.EQ.Editor.EqAssetCopy
                 if (ss.AssetIndices != null)
                 {
                     ss.AssetsToPack ??= new List<string>();
-                    foreach(var i in ss.AssetIndices)
+                    foreach (var i in ss.AssetIndices)
                     {
                         ss.AssetsToPack.Add($"{ss.AssetBase}{i:00}.png");
                     }
@@ -86,15 +121,16 @@ namespace Lantern.EQ.Editor.EqAssetCopy
             }
 
             AssetDatabase.Refresh();
-            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "Sprites", "sprites");
-            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "Sound", "sound");
-            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "Startup", "startup");
-            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "ClientData", "clientdata");
-            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "CharacterSelect_Classic", "characterselect_classic");
-            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "Music_Midi", "music_midi");
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath() + "CharacterSelect_Classic",
+                "characterselect_classic");
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath() + "ClientData", "clientdata");
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath() + "Music_Midi", "music_midi");
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath() + "Sound", "sound");
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath() + "Sprites", "sprites");
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath() + "Startup", "startup");
             AssetDatabase.Refresh();
             EditorUtility.DisplayDialog("EQAssetsCopy",
-                $"EQ asset copy finished in {(int) (EditorApplication.timeSinceStartup - startTime)} seconds", "OK");
+                $"EQ asset copy finished in {(int)(EditorApplication.timeSinceStartup - startTime)} seconds", "OK");
         }
 
         private static bool CopyFolderToBundle(string sourcePath, string destPath, AssetImportType assetImportType)
@@ -223,6 +259,7 @@ namespace Lantern.EQ.Editor.EqAssetCopy
                             importer.SaveAndReimport();
                         }
                     }
+
                     break;
                 }
             }

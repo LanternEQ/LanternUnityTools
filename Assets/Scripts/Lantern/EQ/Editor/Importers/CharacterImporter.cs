@@ -14,7 +14,7 @@ using UnityEngine;
 
 namespace Lantern.EQ.Editor.Importers
 {
-    public class CharacterImporter : EditorWindow
+    public class CharacterImporter : LanternEditorWindow
     {
         /// <summary>
         /// Zone for which characters will be imported
@@ -42,10 +42,39 @@ namespace Lantern.EQ.Editor.Importers
         /// </summary>
         private static List<string> _animationPaths;
 
-        [MenuItem("EQ/Import/Characters", false, 50)]
+        private bool _importAllCharacters = true;
+
+        private static readonly List<string> Lines1 = new()
+        {
+            "This process creates character prefabs from intermediate EverQuest data.",
+            "Importing all characters can take more than an hour.",
+            "You can choose to import all characters or just characters from a specific zone.",
+        };
+
+        private static readonly List<string> Lines2A = new()
+        {
+            "EverQuest character data must be located in:",
+            "\fAssets/EQAssets/Characters/",
+        };
+
+        private static readonly List<string> Lines2B = new()
+        {
+            "EverQuest character data (one character folder per zone) must be located in:",
+            "\fAssets/EQAssets/",
+        };
+
+        private static readonly List<string> Lines3 = new()
+        {
+            "Character prefabs will be created in:",
+            "\fAssets/Content/AssetBundleContent/Characters/"
+        };
+
+        private static readonly int BaseMap = Shader.PropertyToID("_BaseMap");
+
+        [MenuItem("EQ/Assets/Import Characters &c", false, 2)]
         public static void ShowImportDialog()
         {
-            GetWindow(typeof(CharacterImporter), true, "Import Characters");
+            GetWindow<CharacterImporter>("Import Characters", typeof(EditorWindow));
         }
 
         /// <summary>
@@ -53,22 +82,21 @@ namespace Lantern.EQ.Editor.Importers
         /// </summary>
         private void OnGUI()
         {
-            int minHeight = 60;
-            minSize = maxSize = new Vector2(225, minHeight);
-            EditorGUIUtility.labelWidth = 100;
-            _zoneShortname = EditorGUILayout.TextField("Zone Shortname", _zoneShortname);
-            EditorGUILayout.Space();
+            DrawInfoBox(Lines1, "d_console.infoicon");
+            DrawInfoBox(_importAllCharacters ? Lines2A : Lines2B, "d_Collab.FolderConflict");
+            DrawInfoBox(Lines3, "d_Collab.FolderMoved");
+            DrawHorizontalLine();
+            DrawToggle("Import All Characters", ref _importAllCharacters);
 
-            Rect r = EditorGUILayout.BeginHorizontal("Button");
-            if (GUI.Button(r, GUIContent.none))
+            if (!_importAllCharacters)
             {
-                Close();
-                Import();
+                DrawTextField("Zone Name:", ref _zoneShortname);
             }
 
-            GUILayout.Label("Import");
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.Space();
+            if (DrawButton("Import"))
+            {
+                Import();
+            }
         }
 
         private static void Import()
@@ -100,43 +128,35 @@ namespace Lantern.EQ.Editor.Importers
             _animationPaths.Clear();
         }
 
-        private static void PostProcess(GameObject obj)
+        private static void PostProcess(GameObject character)
         {
-            string modelAsset = obj.name;
-            var characterModel = obj.AddComponent<CharacterModel>();
-
-            var lightSetter = obj.AddComponent<AmbientLightSetterDynamic>();
+            var characterModel = character.AddComponent<CharacterModel>();
+            var lightSetter = character.AddComponent<AmbientLightSetterDynamic>();
             lightSetter.FindRenderers();
-
-            // Disabled in 0.1.5
-            //LoadCharacterSounds(obj, _modelSounds);
-
             characterModel.SetReferences(null, null, null, lightSetter,
-                obj.GetComponent<CharacterSoundLogic>(),
-                obj.GetComponent<CharacterAnimationLogic>());
+                character.GetComponent<CharacterSoundLogic>(),
+                character.GetComponent<CharacterAnimationLogic>());
         }
 
-        private static void PostProcessSkeletal(GameObject skeleton)
+        private static void PostProcessSkeletal(GameObject character)
         {
-            string modelAsset = skeleton.name;
-            var characterModel = skeleton.AddComponent<CharacterModel>();
+            string modelAsset = character.name;
+            var characterModel = character.AddComponent<CharacterModel>();
 
-            VariantHandler variantHandler = null;
-
-            var cac = skeleton.AddComponent<CharacterAnimationController>();
-            var cal = skeleton.AddComponent<CharacterAnimationLogic>();
+            var cac = character.AddComponent<CharacterAnimationController>();
+            var cal = character.AddComponent<CharacterAnimationLogic>();
             cal.InitializeImport();
-            var ap = skeleton.AddComponent<SkeletonAttachPoints>();
+            var ap = character.AddComponent<SkeletonAttachPoints>();
             ap.FindAttachPoints();
-            var e3d = skeleton.AddComponent<Equipment3dHandler>();
+            var e3d = character.AddComponent<Equipment3dHandler>();
             e3d.SetSkeletonAttachPoints(ap);
-            skeleton.AddComponent<CharacterSoundLogic>();
+            character.AddComponent<CharacterSoundLogic>();
 
             // TODO: Is this still needed?
-            var animatedObject = skeleton.GetComponent<ObjectAnimation>();
+            var animatedObject = character.GetComponent<ObjectAnimation>();
             DestroyImmediate(animatedObject);
 
-            var animation = skeleton.GetComponent<UnityEngine.Animation>();
+            var animation = character.GetComponent<UnityEngine.Animation>();
 
             // Find all meshes for this model
             string path = _zoneShortname == "characters"
@@ -156,16 +176,16 @@ namespace Lantern.EQ.Editor.Importers
             {
                 LoadModelAnimations(animation, modelAsset, AssetImportType.Characters);
 
-                if (_animationModelSources.ContainsKey(modelAsset))
+                if (_animationModelSources.TryGetValue(modelAsset, out var source))
                 {
-                    LoadModelAnimations(animation, _animationModelSources[modelAsset], AssetImportType.Characters);
+                    LoadModelAnimations(animation, source, AssetImportType.Characters);
                 }
             }
 
             // Initialize the animation controller
             cac.InitializeImport();
 
-            variantHandler = skeleton.GetComponent<VariantHandler>();
+            var variantHandler = character.GetComponent<VariantHandler>();
 
             if (RaceHelper.IsPlayableRaceModel(modelAsset))
             {
@@ -173,14 +193,12 @@ namespace Lantern.EQ.Editor.Importers
                 FindAdditionalFaces(modelAsset, variantHandler.GetLastPrimaryMesh(), variantHandler);
             }
 
-            var vertexColorDebug = skeleton.AddComponent<AmbientLightSetterDynamic>();
+            var vertexColorDebug = character.AddComponent<AmbientLightSetterDynamic>();
             vertexColorDebug.FindRenderers();
 
-            LoadCharacterSounds(skeleton, _modelSounds);
-
             characterModel.SetReferences(ap, variantHandler as Equipment2dHandler, e3d, vertexColorDebug,
-                skeleton.GetComponent<CharacterSoundLogic>(),
-                skeleton.GetComponent<CharacterAnimationLogic>());
+                character.GetComponent<CharacterSoundLogic>(),
+                character.GetComponent<CharacterAnimationLogic>());
         }
 
         private static void LoadModelAnimations(UnityEngine.Animation animation, string animationBase, AssetImportType type)
@@ -276,6 +294,7 @@ namespace Lantern.EQ.Editor.Importers
             GetEquipmentVariantsForIndex(modelAsset, 15, 9, robeMesh, pvh, "clk");
             GetEquipmentVariantsForIndex(modelAsset, 16, 10, robeMesh, pvh, "clk");
 
+            // Erudite edge case
             if (modelAsset == "erm" || modelAsset == "erf")
             {
                 var headMesh = pvh.GetHeadMesh(0);
@@ -304,7 +323,7 @@ namespace Lantern.EQ.Editor.Importers
                     continue;
                 }
 
-                textures[i] = TextureHelper.FindEquipmentVariant(modelAsset, material.GetTexture("_BaseMap"), textureIndex,
+                textures[i] = TextureHelper.FindEquipmentVariant(modelAsset, material.GetTexture(BaseMap), textureIndex,
                     requiredString);
             }
 
@@ -344,7 +363,7 @@ namespace Lantern.EQ.Editor.Importers
                     continue;
                 }
 
-                firstMaterials[i] = sharedMaterials[i].GetTexture("_BaseMap");
+                firstMaterials[i] = sharedMaterials[i].GetTexture(BaseMap);
             }
 
             faces.Add(firstMaterials);
@@ -377,244 +396,6 @@ namespace Lantern.EQ.Editor.Importers
             }
 
             (nonPlayableVariantHandler as Equipment2dHandler)?.SetAdditionalFaces(faces);
-        }
-
-        private static void LoadCharacterSounds(GameObject skeleton, List<ModelSound> soundData)
-        {
-            // Sound script is added regardless
-         /*   string modelName = skeleton.name;
-            int raceId = ServiceFa RaceHelper.GetRaceIdFromModelName(skeleton.name);
-
-            if (raceId == 0)
-            {
-                return;
-            }
-
-            CharacterSoundsBase soundBaseScript = null;
-
-            List<ModelSound> validSounds = GetAllSoundsForRace(raceId.Value, soundData);
-
-            if (validSounds.Count == 0)
-            {
-                soundBaseScript = skeleton.AddComponent<CharacterSoundsBaseEmpty>();
-                return;
-            }
-            else
-            {
-                soundBaseScript = skeleton.AddComponent<CharacterSounds>();
-            }
-
-            // Handle gender variants
-            if (validSounds.Count > 1)
-            {
-                GenderId? gender = RaceHelper.GetGenderFromModel(modelName.ToUpper());
-
-                if (!gender.HasValue)
-                {
-                    Debug.LogError("No gender found for model: " + modelName);
-                    return;
-                }
-
-                List<ModelSound> genderSounds = new List<ModelSound>();
-
-                foreach (var soundEntry in validSounds)
-                {
-                    if (soundEntry.GenderId == gender.Value)
-                    {
-                        genderSounds.Add(soundEntry);
-                    }
-                }
-
-                validSounds = genderSounds;
-
-                if (validSounds.Count == 0)
-                {
-                    Debug.LogError($"CharacterImport: No sounds found for race and gender: {modelName} {gender.Value}");
-                    return;
-                }
-            }
-
-            foreach (var validSound in validSounds)
-            {
-                AddSoundToCharacterSounds(validSound.Attack, CharacterSoundType.Attack, soundBaseScript,
-                    validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.GetHit1, CharacterSoundType.GetHit, soundBaseScript,
-                    validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.GetHit2, CharacterSoundType.GetHit, soundBaseScript,
-                    validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.GetHit3, CharacterSoundType.GetHit, soundBaseScript,
-                    validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.GetHit4, CharacterSoundType.GetHit, soundBaseScript,
-                    validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Death, CharacterSoundType.Death, soundBaseScript,
-                    validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Drown, CharacterSoundType.Drown, soundBaseScript,
-                    validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Idle1, CharacterSoundType.Idle, soundBaseScript,
-                    validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Idle2, CharacterSoundType.Idle, soundBaseScript,
-                    validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Loop, CharacterSoundType.Loop, soundBaseScript,
-                    validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Walking, CharacterSoundType.Walking, soundBaseScript,
-                    validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Running, CharacterSoundType.Running, soundBaseScript,
-                    validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.Jump, CharacterSoundType.Jump, soundBaseScript,
-                    validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.SAttack, CharacterSoundType.SAttack, soundBaseScript,
-                    validSound.VariantId);
-                AddSoundToCharacterSounds(validSound.TAttack, CharacterSoundType.TAttack, soundBaseScript,
-                    validSound.VariantId);
-
-                // Sitting test
-                CharacterAnimationController animationsController =
-                    skeleton.GetComponent<CharacterAnimationController>();
-
-                if (animationsController == null)
-                {
-                    return;
-                }
-
-                if (animationsController.HasAnimation("p02"))
-                {
-                    string sittingSound = modelName.ToLower() == "ske" ? "Skel_Std.wav" : "StepCrch.WAV";
-                    AddSoundToCharacterSounds(sittingSound, CharacterSoundType.Sit, soundBaseScript,
-                        validSound.VariantId);
-                }
-
-                // Crouch walk
-                if (animationsController.HasAnimation("l06"))
-                {
-                    AddSoundToCharacterSounds("StepCrch.WAV", CharacterSoundType.Crouch, soundBaseScript,
-                        validSound.VariantId);
-                }
-
-                // Treading swim
-                if (animationsController.HasAnimation("l09"))
-                {
-                    AddSoundToCharacterSounds("WatTrd_1.WAV", CharacterSoundType.Treading, soundBaseScript,
-                        validSound.VariantId);
-                }
-
-                // Moving swim
-                if (animationsController.HasAnimation("p06"))
-                {
-                    AddSoundToCharacterSounds("WatTrd_2.WAV", CharacterSoundType.Swim, soundBaseScript,
-                        validSound.VariantId);
-                }
-
-                // Kneel
-                if (animationsController.HasAnimation("p05"))
-                {
-                    AddSoundToCharacterSounds("StepCrch.WAV", CharacterSoundType.Kneel, soundBaseScript,
-                        validSound.VariantId);
-                }
-
-                // Kick
-                if (animationsController.HasAnimation("c01"))
-                {
-                    AddSoundToCharacterSounds("Kick1.WAV", CharacterSoundType.Kick, soundBaseScript,
-                        validSound.VariantId);
-                }
-
-                // Pierce
-                if (animationsController.HasAnimation("c02"))
-                {
-                    AddSoundToCharacterSounds("Stab.WAV", CharacterSoundType.Pierce, soundBaseScript,
-                        validSound.VariantId);
-                }
-
-                // 2H slash
-                if (animationsController.HasAnimation("c03"))
-                {
-                    AddSoundToCharacterSounds("SwingBig.WAV", CharacterSoundType.TwoHandSlash, soundBaseScript,
-                        validSound.VariantId);
-                }
-
-                // 2H blunt
-                if (animationsController.HasAnimation("c04"))
-                {
-                    AddSoundToCharacterSounds("Impale.WAV", CharacterSoundType.TwoHandBlunt, soundBaseScript,
-                        validSound.VariantId);
-                }
-
-                // Bash?
-                if (animationsController.HasAnimation("c07"))
-                {
-                    AddSoundToCharacterSounds("BashShld.WAV", CharacterSoundType.Bash, soundBaseScript,
-                        validSound.VariantId);
-                }
-
-                // Archery
-                if (animationsController.HasAnimation("c09"))
-                {
-                    AddSoundToCharacterSounds("BowDraw.WAV", CharacterSoundType.Archery, soundBaseScript,
-                        validSound.VariantId);
-                }
-
-                // Flying kick
-                if (animationsController.HasAnimation("t07"))
-                {
-                    AddSoundToCharacterSounds("RndKick.WAV", CharacterSoundType.FlyingKick, soundBaseScript,
-                        validSound.VariantId);
-                }
-
-                // Rapid punch
-                if (animationsController.HasAnimation("t08"))
-                {
-                    AddSoundToCharacterSounds("Punch1.WAV", CharacterSoundType.RapidPunch, soundBaseScript,
-                        validSound.VariantId);
-                }
-
-                // Large punch
-                if (animationsController.HasAnimation("t09"))
-                {
-                    AddSoundToCharacterSounds("Punch1.WAV", CharacterSoundType.LargePunch, soundBaseScript,
-                        validSound.VariantId);
-                }
-            }*/
-        }
-
-        // Move this to the parser
-        private static List<ModelSound> GetAllSoundsForRace(int raceId,
-            List<ModelSound> soundData)
-        {
-            List<ModelSound> raceSounds = new List<ModelSound>();
-
-            foreach (var entry in soundData)
-            {
-                if (entry.RaceId == raceId)
-                {
-                    raceSounds.Add(entry);
-                }
-            }
-
-            return raceSounds;
-        }
-
-        private static void AddSoundToCharacterSounds(string soundName, CharacterSoundType characterSoundType,
-            CharacterSoundsBase soundBaseScript, int variant)
-        {
-            if (string.IsNullOrEmpty(soundName))
-            {
-                return;
-            }
-
-            if (soundName.ToLower().Contains("null"))
-            {
-                return;
-            }
-
-            string realSoundId = soundName.ToLower().Substring(0, soundName.Length - 3) + "ogg";
-
-            AudioClip soundClip =
-                AssetDatabase.LoadAssetAtPath<AudioClip>(PathHelper.GetAssetBundleContentPath()+ "Sound/" + realSoundId);
-
-            if (soundClip != null)
-            {
-                soundBaseScript.AddSoundClip(characterSoundType, soundClip, variant);
-            }
         }
 
         private static void CreateModelAnimationLink()

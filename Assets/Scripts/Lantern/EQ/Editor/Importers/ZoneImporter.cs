@@ -14,7 +14,7 @@ using UnityEngine;
 
 namespace Lantern.EQ.Editor.Importers
 {
-    public class ZoneImporter : EditorWindow
+    public class ZoneImporter : LanternEditorWindow
     {
         /// <summary>
         /// The shortname of the zone that will be imported - e.g. arena, qeynos2, gfaydark
@@ -31,42 +31,90 @@ namespace Lantern.EQ.Editor.Importers
 
         private bool _preinstantiateObjects;
         private bool _preinstantiateDoors;
-        private bool _rebuildBundles;
+        private bool _rebuildBundles = true;
+
+        private enum ZoneImportType
+        {
+            SingleZone,
+            Batch
+        }
+
+        private ZoneImportType _importType = ZoneImportType.SingleZone;
+        private ZoneBatchType _zoneBatchType = ZoneBatchType.All;
+
+        private static readonly List<string> Text1 = new()
+        {
+            "This process creates zone prefabs from intermediate EverQuest data.",
+            "This usually takes 2-6 minutes per zone depending on complexity."
+        };
+
+        private static readonly List<string> Text2 = new()
+        {
+            "EverQuest zone data (one folder per zone) must be located in:",
+            "\fAssets/EQAssets/",
+        };
+
+        private static readonly List<string> Text3 = new()
+        {
+            "Zone prefabs will be output to:",
+            "\fAssets/Content/AssetBundleContent/Zones/"
+        };
+
+        private static readonly List<string> Text4 = new()
+        {
+            "Importing all zones may takes several hours and the editor may become unresponsive."
+        };
+
+        private static readonly List<string> Text5 = new()
+        {
+            "Pre-instantiating objects and doors should only be done if you're not building for the LanternEQ client."
+        };
 
         /// <summary>
         /// Opens the zone importer settings window
         /// </summary>
-        [MenuItem("EQ/Import/Zone &z", false, 10)]
+        [MenuItem("EQ/Assets/Import Zone &z", false, 1)]
         public static void ShowImportDialog()
         {
-            GetWindow(typeof(ZoneImporter), true, "Import Zone");
+            GetWindow<ZoneImporter>("Import Zone", typeof(EditorWindow));
         }
 
-        /// <summary>
-        /// Draws the settings window for the zone importer
-        /// </summary>
         private void OnGUI()
         {
-            // Force the window size
-            int minHeight = 100;
-            minSize = maxSize = new Vector2(225, minHeight);
-            EditorGUIUtility.labelWidth = 100;
+            DrawInfoBox(Text1, "d_console.infoicon");
+            DrawInfoBox(Text2, "d_Collab.FolderConflict");
+            DrawInfoBox(Text3, "d_Collab.FolderMoved");
+            DrawHorizontalLine();
 
-            _zoneShortname = EditorGUILayout.TextField("Zone Shortname", _zoneShortname);
-            _preinstantiateObjects = GUILayout.Toggle(_preinstantiateObjects, "Pre-instantiate Objects");
-            _preinstantiateDoors = GUILayout.Toggle(_preinstantiateDoors, "Pre-instantiate Doors");
-            _rebuildBundles = GUILayout.Toggle(_rebuildBundles, "Rebuild Bundles");
+            DrawEnumPopup("Import Type", ref _importType);
 
-            Rect buttonRect = EditorGUILayout.BeginHorizontal("Button");
-            if (GUI.Button(buttonRect, GUIContent.none))
+            if (_importType == ZoneImportType.SingleZone)
+            {
+                DrawTextField("Zone Shortname", ref _zoneShortname);
+            }
+            else if (_importType == ZoneImportType.Batch)
+            {
+                DrawEnumPopup("Batch Type", ref _zoneBatchType);
+            }
+
+            if (_importType == ZoneImportType.Batch && _zoneBatchType == ZoneBatchType.All)
+            {
+                DrawInfoBox(Text4, "d_console.warnicon");
+            }
+
+            if (_preinstantiateDoors || _preinstantiateObjects)
+            {
+                DrawInfoBox(Text5, "d_console.warnicon");
+            }
+
+            DrawToggle("Pre-instantiate Objects", ref _preinstantiateObjects);
+            DrawToggle("Pre-instantiate Doors", ref _preinstantiateDoors);
+            DrawToggle("Rebuild Bundles", ref _rebuildBundles);
+
+            if (DrawButton("Start Import"))
             {
                 ImportZone();
             }
-
-            GUILayout.Label("Import");
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.Space();
         }
 
         /// <summary>
@@ -90,21 +138,9 @@ namespace Lantern.EQ.Editor.Importers
             var startTime = (float)EditorApplication.timeSinceStartup;
             var splitNames = _zoneShortname.Split(';').ToList();
 
-            if (splitNames.Count == 1 && (splitNames[0] == "all" || splitNames[0] == "antonica"
-                                                                 || splitNames[0] == "odus" ||
-                                                                 splitNames[0] == "faydwer" || splitNames[0] == "other"
-                                                                 || splitNames[0] == "kunark" ||
-                                                                 splitNames[0] == "velious" ||
-                                                                 splitNames[0] == "planes"))
+            if (_importType == ZoneImportType.Batch)
             {
-                if (!ImportHelper.LoadTextAsset($"Assets/Content/ClientData/zonelist_{splitNames[0]}.txt",
-                        out var allShortnames))
-                {
-                    Debug.LogError($"ZoneImporter: Unable to load zone list for specifier: {splitNames[0]}");
-                    return;
-                }
-
-                splitNames = TextParser.ParseTextByNewline(allShortnames);
+                splitNames = ImportHelper.GetBatchZoneNames(_zoneBatchType);
             }
 
             Close();
@@ -272,9 +308,7 @@ namespace Lantern.EQ.Editor.Importers
             var globalLightTextAssetPath =
                 PathHelper.GetLoadPath(shortname, AssetImportType.Zone) + "ambient_light.txt";
 
-            string globalLightText = string.Empty;
-
-            ImportHelper.LoadTextAsset(globalLightTextAssetPath, out globalLightText);
+            ImportHelper.LoadTextAsset(globalLightTextAssetPath, out var globalLightText);
 
             if (string.IsNullOrEmpty(globalLightText))
             {
@@ -346,8 +380,7 @@ namespace Lantern.EQ.Editor.Importers
 
         private void ImportDoors(string shortname)
         {
-            //DoorImporter.CreateDoorInstances(shortname, FindObjectOfType<ZoneMeshSunlightValues>(),
-            //  _doorsRoot.transform);
+            DoorImporter.CreateDoorInstances(shortname, _doorsRoot.transform);
         }
 
         private void ScalePrefab()
