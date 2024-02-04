@@ -135,15 +135,13 @@ namespace Lantern.EQ.Editor.Importers
                 return;
             }
 
-            var startTime = (float)EditorApplication.timeSinceStartup;
+            StartImport();
             var splitNames = _zoneShortname.Split(';').ToList();
 
             if (_importType == ZoneImportType.Batch)
             {
                 splitNames = ImportHelper.GetBatchZoneNames(_zoneBatchType);
             }
-
-            Close();
 
             List<string> successful = new List<string>();
             List<string> failed = new List<string>();
@@ -165,10 +163,11 @@ namespace Lantern.EQ.Editor.Importers
                 BuildAssetBundles.BuildAllAssetBundles(false);
             }
 
-            string importResult = GetFormattedImportResult(startTime, successful, failed);
+            var importTime = FinishImport();
+            string importResult = GetFormattedImportResult(importTime, successful, failed);
 
             EditorUtility.DisplayDialog("ZoneImport" + (_rebuildBundles ? "/BuildBundles" : string.Empty),
-                importResult.ToString(),
+                importResult,
                 "OK");
 
             // LANTERN ONLY
@@ -422,11 +421,11 @@ namespace Lantern.EQ.Editor.Importers
                 PathHelper.GetRootSavePath(shortname) + shortname + ".prefab");
         }
 
-        private string GetFormattedImportResult(float startTime, List<string> successful, List<string> failed)
+        private string GetFormattedImportResult(int importTime, List<string> successful, List<string> failed)
         {
             StringBuilder importResult = new StringBuilder();
             importResult.AppendLine(
-                $"Zone(s) import {(_rebuildBundles ? "and build bundles " : String.Empty)}finished in {(int)(EditorApplication.timeSinceStartup - startTime)} seconds.");
+                $"Zone(s) import {(_rebuildBundles ? "and build bundles " : String.Empty)}finished in {importTime} seconds.");
             importResult.AppendLine();
             if (successful.Count > 0)
             {

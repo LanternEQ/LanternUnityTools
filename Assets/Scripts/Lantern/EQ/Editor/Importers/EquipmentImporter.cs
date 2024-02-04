@@ -16,7 +16,7 @@ namespace Lantern.EQ.Editor.Importers
         private static readonly List<string> Text1 = new()
         {
             "This process creates equipment prefabs from intermediate EverQuest data.",
-            "Importing all equipment takes around ten minutes.",
+            "Importing all equipment takes around fifteen minutes.",
         };
 
         private static readonly List<string> Text2 = new()
@@ -55,8 +55,9 @@ namespace Lantern.EQ.Editor.Importers
             }
         }
 
-        private static void ImportEquipment()
+        private void ImportEquipment()
         {
+            StartImport();
             _animations = new Dictionary<string, AnimationClip>();
             _animationPaths = AnimationImporter.LoadAnimationPaths("equipment", AssetImportType.Equipment);
 
@@ -67,15 +68,16 @@ namespace Lantern.EQ.Editor.Importers
                 return;
             }
 
-            var startTime = EditorApplication.timeSinceStartup;
             ActorStaticImporter.ImportList("equipment", AssetImportType.Equipment, PostProcessStatic);
             ActorSkeletalImporter.ImportList("equipment", AssetImportType.Equipment, PostProcessSkeletal);
             ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "Equipment", "equipment");
-            EditorUtility.DisplayDialog("EquipmentImport",
-                $"Equipment import finished in {(int) (EditorApplication.timeSinceStartup - startTime)} seconds", "OK");
 
             _animations.Clear();
             _animationPaths.Clear();
+
+            var importTime = FinishImport();
+            EditorUtility.DisplayDialog("EquipmentImport",
+                $"Equipment import finished in {importTime} seconds", "OK");
         }
 
         private static void PostProcessStatic(GameObject go)

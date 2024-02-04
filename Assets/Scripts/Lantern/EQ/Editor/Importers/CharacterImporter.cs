@@ -47,7 +47,7 @@ namespace Lantern.EQ.Editor.Importers
         private static readonly List<string> Lines1 = new()
         {
             "This process creates character prefabs from intermediate EverQuest data.",
-            "Importing all characters can take more than an hour.",
+            "Importing all characters takes around an hour and a half.",
             "You can choose to import all characters or just characters from a specific zone.",
         };
 
@@ -95,20 +95,21 @@ namespace Lantern.EQ.Editor.Importers
 
             if (DrawButton("Import"))
             {
-                Import();
+                ImportCharacters();
             }
         }
 
-        private static void Import()
+        private void ImportCharacters()
         {
+            StartImport();
             LoadData();
-            var startTime = EditorApplication.timeSinceStartup;
             TextureHelper.CopyTextures(_zoneShortname, AssetImportType.Characters);
             ActorStaticImporter.ImportList("characters", AssetImportType.Characters, PostProcess);
             ActorSkeletalImporter.ImportList("characters", AssetImportType.Characters, PostProcessSkeletal);
             ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "Characters", "characters");
+            var importTime = FinishImport();
             EditorUtility.DisplayDialog("CharacterImport",
-                $"Character import finished in {(int)(EditorApplication.timeSinceStartup - startTime)} seconds", "OK");
+                $"Character import finished in {importTime} seconds", "OK");
             Cleanup();
         }
 

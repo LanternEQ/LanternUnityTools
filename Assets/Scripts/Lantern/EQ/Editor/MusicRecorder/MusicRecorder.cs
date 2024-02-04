@@ -27,12 +27,12 @@ namespace Lantern.EQ.Editor.MusicRecorder
         private static float _masterVolume = 0.28f;
         private static string _soundFontName = "synthusr_samplefix.sf2";
 
-        private static bool recordOnlyRequiredTracks = true;
+        private static bool _recordOnlyRequiredTracks = true;
 
         private static List<string> text1 = new()
         {
             "This process will convert EverQuest XMI files into WAV audio recordings. When recording for the LanternEQ client, you only need a subset of all tracks as there are duplicates.",
-            "The recording process can take 20+ minutes. Recording all audio will take much longer."
+            "The recording process takes around thirty minutes. Recording all audio will take much longer."
         };
 
         private static List<string> text2 = new()
@@ -63,7 +63,7 @@ namespace Lantern.EQ.Editor.MusicRecorder
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.Label("Record only required tracks");
-            recordOnlyRequiredTracks = EditorGUILayout.Toggle(recordOnlyRequiredTracks);
+            _recordOnlyRequiredTracks = EditorGUILayout.Toggle(_recordOnlyRequiredTracks);
             EditorGUILayout.EndHorizontal();
 
             if (GUILayout.Button("Start Recording"))
@@ -88,8 +88,9 @@ namespace Lantern.EQ.Editor.MusicRecorder
             }
         }
 
-        private static void CreateAllAudioTracks()
+        private void CreateAllAudioTracks()
         {
+            StartImport();
             var usedTracksPath = Path.Combine(Application.dataPath, "Content/ClientData/music_tracks_used.txt");
             var usedTracksText = File.ReadAllText(usedTracksPath);
 
@@ -110,10 +111,7 @@ namespace Lantern.EQ.Editor.MusicRecorder
 
             var trackDictionary = TextParser.ParseTextToDictionaryOfStringList(tracksText);
             var createdAudio = new List<string>();
-
             var loopPointsSb = new StringBuilder();
-
-            var startTime = EditorApplication.timeSinceStartup;
 
             foreach (var xmi in trackDictionary)
             {
@@ -122,7 +120,10 @@ namespace Lantern.EQ.Editor.MusicRecorder
                     var name = xmi.Value[i];
                     if (!usedTracks.Contains(name) || createdAudio.Contains(name))
                     {
-                        continue;
+                        if (_recordOnlyRequiredTracks)
+                        {
+                            continue;
+                        }
                     }
 
                     var xmiFile = LoadXmi(xmi.Key);
@@ -134,7 +135,6 @@ namespace Lantern.EQ.Editor.MusicRecorder
 
             var openerXmi = LoadXmi("opener4");
             CreateCharacterSelectMusic(openerXmi);
-            //GetLoopPoints("opener4", openerXmi, loopPointsSb);
 
             if (loopPointsSb.Length != 0)
             {
@@ -143,8 +143,9 @@ namespace Lantern.EQ.Editor.MusicRecorder
                 File.WriteAllText(filePath, loopPointsSb.ToString());
             }
 
+            var importTime = FinishImport();
             EditorUtility.DisplayDialog("MusicRecorder",
-                $"Music recording finished in {(int) (EditorApplication.timeSinceStartup - startTime)} seconds", "OK");
+                $"Music recording finished in {importTime} seconds", "OK");
         }
 
         private static XmiFile LoadXmi(string name)

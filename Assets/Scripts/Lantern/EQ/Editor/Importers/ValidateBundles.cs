@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Lantern.EQ.AssetBundles;
 using Lantern.EQ.Editor.Helpers;
 using Lantern.EQ.Viewers;
@@ -10,11 +9,17 @@ namespace Lantern.EQ.Editor.Importers
 {
     public class ValidateBundles : LanternEditorWindow
     {
-        private static string foundImage = "sv_icon_dot3_pix16_gizmo";
-        private static string notFoundImage = "sv_icon_dot6_pix16_gizmo";
-        private static string notFoundOptionalImage = "sv_icon_dot4_pix16_gizmo";
+        private const string FoundImage = "sv_icon_dot3_pix16_gizmo";
+        private const string NotFoundImage = "sv_icon_dot6_pix16_gizmo";
+        private const string NotFoundOptionalImage = "sv_icon_dot4_pix16_gizmo";
 
         private Vector2 _scrollPosition = Vector2.zero;
+
+        private static readonly List<string> Lines1 = new()
+        {
+            "Validates that LanternEQ version compliant bundles exist on disk. If you do not see a bundle you have imported, rebuild bundles.",
+            "This process only validates that the bundle exists. It does not verify the content of the bundle.",
+        };
 
         [MenuItem("EQ/Assets/Validate Assets", false, 100)]
         private static void Init()
@@ -24,6 +29,8 @@ namespace Lantern.EQ.Editor.Importers
 
         private void OnGUI()
         {
+            DrawInfoBox(Lines1, "d_console.infoicon");
+
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             DisplayGlobalBundleStatus(LanternAssetBundleId.Characters);
             DisplayGlobalBundleStatus(LanternAssetBundleId.Equipment);
@@ -32,9 +39,7 @@ namespace Lantern.EQ.Editor.Importers
             DisplayGlobalBundleStatus(LanternAssetBundleId.Sound);
             DisplayGlobalBundleStatus(LanternAssetBundleId.Music_Audio);
             DisplayGlobalBundleStatus(LanternAssetBundleId.Music_Midi);
-            DisplayGlobalBundleStatus(LanternAssetBundleId.Construct);
             DisplayGlobalBundleStatus(LanternAssetBundleId.Startup);
-            DisplayGlobalBundleStatus(LanternAssetBundleId.Defaults);
             DisplayGlobalBundleStatus(LanternAssetBundleId.ClientData);
             DisplayZoneBundleStatus(ZoneBatchType.Antonica, false);
             DisplayZoneBundleStatus(ZoneBatchType.Faydwer, false);
@@ -61,12 +66,12 @@ namespace Lantern.EQ.Editor.Importers
 
             if (zones.Count == 0)
             {
-                DrawInfoBox(new List<string> { $"All {type} zone bundles found." }, foundImage, true);
+                DrawInfoBox(new List<string> { $"All {type} zone bundles found." }, FoundImage, true);
             }
             else
             {
                 DrawInfoBox(new List<string> { $"Missing {type} zone bundles: {string.Join(", ", zones)}" },
-                    optional ? notFoundOptionalImage : notFoundImage, true);
+                    optional ? NotFoundOptionalImage : NotFoundImage, true);
             }
         }
 
@@ -76,11 +81,11 @@ namespace Lantern.EQ.Editor.Importers
 
             if (doesExist)
             {
-                DrawInfoBox(new List<string> { $"Bundle {assetBundleId} found." }, foundImage, true);
+                DrawInfoBox(new List<string> { $"Bundle {assetBundleId} found." }, FoundImage, true);
             }
             else
             {
-                DrawInfoBox(new List<string> { $"Bundle {assetBundleId} not found." }, notFoundImage, true);
+                DrawInfoBox(new List<string> { $"Bundle {assetBundleId} not found." }, NotFoundImage, true);
             }
         }
     }

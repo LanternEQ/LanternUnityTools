@@ -10,6 +10,7 @@ namespace Lantern.EQ.Editor
         private static Dictionary<string, Texture2D> _icons;
         private static GUIStyle _folderStyle;
         private static GUIStyle _normalTextStyle;
+        private float _startTime;
 
         protected LanternEditorWindow()
         {
@@ -113,6 +114,17 @@ namespace Lantern.EQ.Editor
             var texture2D = EditorGUIUtility.IconContent(iconString).image as Texture2D;
             _icons[iconString] = texture2D;
             return _icons[iconString];
+        }
+
+        protected void StartImport()
+        {
+            Close();
+            _startTime = (int)EditorApplication.timeSinceStartup;
+        }
+
+        protected int FinishImport()
+        {
+            return (int)(EditorApplication.timeSinceStartup - _startTime);
         }
     }
 }

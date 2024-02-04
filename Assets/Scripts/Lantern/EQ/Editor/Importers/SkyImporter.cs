@@ -50,9 +50,9 @@ namespace Lantern.EQ.Editor.Importers
             }
         }
 
-        private static void ImportSky()
+        private void ImportSky()
         {
-            var startTime = EditorApplication.timeSinceStartup;
+            StartImport();
 
             var meshesToCreate = new List<string>
             {
@@ -148,11 +148,13 @@ namespace Lantern.EQ.Editor.Importers
             var savePath = Path.Combine(PathHelper.GetAssetBundleContentPath(), "Sky/Sky.prefab");
             PrefabUtility.SaveAsPrefabAsset(root, savePath);
             AssetDatabase.Refresh();
-            Object.DestroyImmediate(root);
+            DestroyImmediate(root);
 
             ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "Sky", "sky");
+
+            var importTime = FinishImport();
             EditorUtility.DisplayDialog("SkyImport",
-                $"Sky import finished in {(int)(EditorApplication.timeSinceStartup - startTime)} seconds", "OK");
+                $"Sky import finished in {importTime} seconds", "OK");
         }
 
         private static GameObject InstantiateSkyPrefabAsChild(string prefabName, GameObject parent)

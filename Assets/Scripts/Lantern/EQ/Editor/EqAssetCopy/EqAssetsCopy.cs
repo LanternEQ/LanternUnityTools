@@ -44,7 +44,7 @@ namespace Lantern.EQ.Editor.EqAssetCopy
             }
         }
 
-        private static void Copy()
+        private void Copy()
         {
             if (Application.isPlaying)
             {
@@ -52,6 +52,7 @@ namespace Lantern.EQ.Editor.EqAssetCopy
                 return;
             }
 
+            StartImport();
             var startTime = EditorApplication.timeSinceStartup;
 
             var sourceRootFolder = PathHelper.GetSystemPathFromUnity(PathHelper.GetEqAssetPath());
@@ -129,8 +130,9 @@ namespace Lantern.EQ.Editor.EqAssetCopy
             ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath() + "Sprites", "sprites");
             ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath() + "Startup", "startup");
             AssetDatabase.Refresh();
+            var importTime = FinishImport();
             EditorUtility.DisplayDialog("EQAssetsCopy",
-                $"EQ asset copy finished in {(int)(EditorApplication.timeSinceStartup - startTime)} seconds", "OK");
+                $"EQ asset copy finished in {importTime} seconds", "OK");
         }
 
         private static bool CopyFolderToBundle(string sourcePath, string destPath, AssetImportType assetImportType)
