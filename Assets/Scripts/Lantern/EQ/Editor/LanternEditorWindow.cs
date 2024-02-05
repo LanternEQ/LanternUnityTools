@@ -11,11 +11,18 @@ namespace Lantern.EQ.Editor
         private static GUIStyle _folderStyle;
         private static GUIStyle _normalTextStyle;
         private float _startTime;
+        protected float MinHeight = 300;
 
         protected LanternEditorWindow()
         {
-            minSize = new Vector2(375, 300);
             _icons = new Dictionary<string, Texture2D>();
+            SetMinHeight(MinHeight);
+        }
+
+        protected void SetMinHeight(float minHeight)
+        {
+            MinHeight = minHeight;
+            minSize = new Vector2(375, MinHeight);
         }
 
         protected void OnEnable()

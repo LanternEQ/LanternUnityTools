@@ -62,13 +62,18 @@ namespace Lantern.EQ.Editor.Importers
 
         private static readonly List<string> Text4 = new()
         {
-            "Importing all zones may takes several hours and the editor may become unresponsive."
+            "Importing all zones may takes upwards of five hours."
         };
 
         private static readonly List<string> Text5 = new()
         {
             "Pre-instantiating objects and doors should only be done if you're not building for the LanternEQ client."
         };
+
+        public ZoneImporter()
+        {
+            SetMinHeight(435f);
+        }
 
         /// <summary>
         /// Opens the zone importer settings window

@@ -21,7 +21,7 @@ namespace Lantern.EQ.Editor.Importers
             "This process only validates that the bundle exists. It does not verify the content of the bundle.",
         };
 
-        [MenuItem("EQ/Assets/Validate Assets", false, 100)]
+        [MenuItem("EQ/Assets/Validate Bundles", false, 100)]
         private static void Init()
         {
             GetWindow<ValidateBundles>("Validate Bundles", typeof(EditorWindow));
