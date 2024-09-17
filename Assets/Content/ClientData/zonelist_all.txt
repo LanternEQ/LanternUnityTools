@@ -1,4 +1,4 @@
-﻿# Lantern Zone List
+# Lantern Zone List
 airplane
 akanon
 arena
@@ -42,7 +42,7 @@ freportw
 frontiermtns
 frozenshadow
 gfaydark
-freatdivide
+greatdivide
 grobb
 growthplane
 gukbottom
@@ -101,7 +101,7 @@ sirens
 skyfire
 skyshrine
 sleeper
-solgunga
+soldunga
 soldungb
 soltemple
 southkarana

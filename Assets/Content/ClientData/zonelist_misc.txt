@@ -1,0 +1,4 @@
+﻿# Lantern Zone List - Other
+cshome
+load
+tutorial

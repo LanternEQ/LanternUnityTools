@@ -1,4 +1,4 @@
-﻿namespace Lantern.Editor.Importers
+﻿namespace Lantern.EQ.Editor.Importers
 {
     public enum AssetImportType
     {

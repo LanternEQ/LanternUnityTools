@@ -16,7 +16,7 @@ namespace Infrastructure.EQ.TextParser
         /// <param name="text">The text file to be parsed</param>
         /// <param name="commentChar">The character that denotes a comment line</param>
         /// <returns>A list of parsed lines</returns>
-        public static List<string> ParseTextByNewline(string text, char commentChar = '#')
+        public static List<string> ParseTextByNewline(string text, bool removeComments = true, char commentChar = '#')
         {
             if (string.IsNullOrEmpty(text))
             {
@@ -28,8 +28,13 @@ namespace Infrastructure.EQ.TextParser
                 StringSplitOptions.None
             );
 
-            return textLines.Where(line => !string.IsNullOrEmpty(line))
-                .Where(line => !line.StartsWith(commentChar.ToString())).ToList();
+            if (removeComments)
+            {
+                return textLines.Where(line => !string.IsNullOrEmpty(line))
+                    .Where(line => !line.StartsWith(commentChar.ToString())).ToList();
+            }
+
+            return textLines.ToList();
         }
 
         /// <summary>
@@ -71,7 +76,7 @@ namespace Infrastructure.EQ.TextParser
                 return null;
             }
 
-            List<string> parsedLines = ParseTextByNewline(text, commentChar);
+            List<string> parsedLines = ParseTextByNewline(text, true, commentChar);
 
             var parsedOutput = new List<List<string>>();
 
@@ -111,7 +116,7 @@ namespace Infrastructure.EQ.TextParser
                 return null;
             }
 
-            List<string> parsedLines = ParseTextByNewline(text, commentChar);
+            List<string> parsedLines = ParseTextByNewline(text, false);
 
             var parsedOutput = new Dictionary<string, string>();
 
@@ -135,7 +140,33 @@ namespace Infrastructure.EQ.TextParser
             return parsedOutput;
         }
 
-        public static List<string> ParseStringToList(string text)
+        public static Dictionary<string, List<string>> ParseTextToDictionaryOfStringList(string text)
+        {
+            var dictionary = new Dictionary<string, List<string>>();
+            if (string.IsNullOrEmpty(text))
+            {
+                return dictionary;
+            }
+
+            var lines = TextParser.ParseTextByDelimitedLines(text, ',');
+
+            for (int i = 0; i < lines.Count; i++)
+            {
+                var mtl = lines[i];
+                if (mtl == null || mtl.Count == 0)
+                {
+                    continue;
+                }
+
+                string first = mtl[0];
+                mtl.RemoveAt(0);
+                dictionary[first] = new List<string>(mtl);
+            }
+
+            return dictionary;
+        }
+
+        public static List<string> ParseTextToList(string text)
         {
             List<string> returnList = new List<string>();
 

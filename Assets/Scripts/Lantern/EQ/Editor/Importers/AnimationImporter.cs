@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using Infrastructure.EQ.TextParser;
-using Lantern.Editor.Importers;
 using Lantern.EQ.Animation;
 using Lantern.EQ.Editor.Helpers;
 using UnityEditor;

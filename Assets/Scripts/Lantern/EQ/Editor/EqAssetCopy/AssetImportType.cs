@@ -6,5 +6,7 @@
         Sprite = 1,
         SpriteSheet = 2,
         ClientData = 3,
+        Xmi = 4,
+        Sound = 5,
     }
 }

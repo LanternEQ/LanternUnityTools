@@ -37,6 +37,7 @@ namespace Lantern.EQ.Animation
         private float _oneShotSpeed;
 
         private Action<string> _animationDebugCallback;
+        private Action<AnimationType> _animationFiredCallback;
 
         public void Initialize(AnimationType initialAnimation)
         {
@@ -49,6 +50,11 @@ namespace Lantern.EQ.Animation
         public void SetAnimationDebug(Action<string> callback)
         {
             _animationDebugCallback = callback;
+        }
+
+        public void SetAnimationFiredCallback(Action<AnimationType> callback)
+        {
+            _animationFiredCallback = callback;
         }
 
         public void SetNewConstantStateIfNot(AnimationType animationType, AnimationType ifNotAnimation, int priority,
@@ -122,6 +128,7 @@ namespace Lantern.EQ.Animation
             }
 
             _currentConstantState = animationType;
+            _animationFiredCallback?.Invoke(animationType);
         }
 
         private void StopOneShot()
@@ -273,6 +280,7 @@ namespace Lantern.EQ.Animation
 
             _resolveOneShot = StartCoroutine(ReturnToDefault(returnTime));
             _animationDebugCallback?.Invoke("Returning to constant state in : " + returnTime);
+            _animationFiredCallback?.Invoke(animationType);
         }
 
         private void AbortReturnToConstantState()
