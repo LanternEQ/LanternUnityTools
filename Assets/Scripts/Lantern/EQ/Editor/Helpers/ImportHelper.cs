@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using Infrastructure.EQ.TextParser;
+using Lantern.EQ.Editor.Importers;
 using UnityEditor;
 using UnityEngine;
 
@@ -97,6 +100,20 @@ namespace Lantern.EQ.Editor.Helpers
 
             importer.SetAssetBundleNameAndVariant(bundleTag, string.Empty);
             importer.SaveAndReimport();
+        }
+
+        public static List<string> GetBatchZoneNames(ZoneBatchType zoneBatchType)
+        {
+            var type = zoneBatchType.ToString().ToLower();
+            if (LoadTextAsset($"Assets/Content/ClientData/zonelist_{type}.txt",
+                    out var allShortnames))
+            {
+                return TextParser.ParseTextByNewline(allShortnames);
+            }
+
+            Debug.LogError($"ZoneImporter: Unable to load zone list for specifier: {type}");
+            return new List<string>();
+
         }
     }
 }

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using Lantern.EQ.Data;
+using Lantern.EQ.Sound;
 using UnityEngine;
 
 namespace Lantern.EQ.Animation
@@ -330,6 +332,203 @@ namespace Lantern.EQ.Animation
             }
 
             return animationType + $" ({animName})";
+        }
+
+        public static bool IsAttackAnimation(AnimationType animationType)
+        {
+            switch(animationType)
+            {
+                case AnimationType.CombatPiercing:
+                case AnimationType.Combat2HSlash:
+                case AnimationType.Combat2HBlunt:
+                case AnimationType.Combat1HSlash:
+                case AnimationType.Combat1HSlashOffhand:
+                case AnimationType.CombatBash:
+                case AnimationType.CombatHandToHand:
+                case AnimationType.CombatSwimAttack:
+                    return true;
+            }
+
+            return false;
+        }
+
+        public static CharacterSoundType GetSoundFromType(AnimationType animationType)
+        {
+            switch (animationType)
+            {
+                case AnimationType.CombatKick: // 1
+                    return CharacterSoundType.Kick;
+                case AnimationType.CombatPiercing: // 2
+                    // TODO: checks model override
+                    return CharacterSoundType.Pierce;
+                case AnimationType.Combat2HSlash: // 3
+                    // TODO: checks model override
+                    return CharacterSoundType.TwoHandSlash;
+                case AnimationType.Combat2HBlunt: // 4
+                    return CharacterSoundType.TwoHandBlunt;
+                case AnimationType.Combat1HSlash: // TODO:
+                    // TODO: checks model override
+                    return CharacterSoundType.Attack;
+                case AnimationType.Combat1HSlashOffhand: // TODO:
+                    // TODO: checks model override
+                    break;
+                case AnimationType.CombatBash: // 7
+                    // TODO: checks model override
+                    return CharacterSoundType.Bash;
+                case AnimationType.CombatHandToHand: // TODO:
+                    // TODO: checks model override
+                    return CharacterSoundType.Attack;
+                case AnimationType.CombatArchery: // 9
+                    return CharacterSoundType.Archery;
+                case AnimationType.CombatSwimAttack: // TODO:
+                    // TODO: checks model override
+                    break;
+                case AnimationType.CombatRoundKick: // 11
+                    return CharacterSoundType.RoundKick;
+                case AnimationType.Damage1:
+                case AnimationType.Damage2:
+                    return CharacterSoundType.GetHit;
+                case AnimationType.DamageTrap: // TODO:
+                    break;
+                case AnimationType.DamageDrowningBurning: // 15
+                    return CharacterSoundType.Drown;
+                case AnimationType.DamageDeath: // 16
+                    return CharacterSoundType.Death;
+                case AnimationType.LocomotionWalk: // 17
+                case AnimationType.LocomotionWalkReverse:
+                    return CharacterSoundType.Walking;
+                case AnimationType.LocomotionRun: // 18
+                case AnimationType.LocomotionRunReverse:
+                    return CharacterSoundType.Running;
+                case AnimationType.LocomotionJumpRun: // 19
+                case AnimationType.LocomotionJumpStand: // 20
+                    return CharacterSoundType.Jump;
+                case AnimationType.LocomotionFall: // 21
+                    break;
+                case AnimationType.LocomotionDuckWalk: // 22
+                    return CharacterSoundType.Crouch;
+                case AnimationType.LocomotionClimb: // 23
+                    return CharacterSoundType.Climb;
+                case AnimationType.Duck: // 24
+                case AnimationType.DuckReverse:
+                    break;
+                case AnimationType.LocomotionSwimTread: // 25
+                    return CharacterSoundType.Treading;
+                case AnimationType.IdleStand: // 26
+                    return CharacterSoundType.Idle;
+                case AnimationType.SocialCheer:
+                    break;
+                case AnimationType.SocialMourn:
+                    break;
+                case AnimationType.SocialWave:
+                    break;
+                case AnimationType.SocialRude:
+                    break;
+                case AnimationType.SocialYawn:
+                    break;
+                case AnimationType.PassiveStand:
+                    break;
+                case AnimationType.PassiveSitStand: // 33
+                case AnimationType.PassiveStandSit:
+                    return CharacterSoundType.Sit;
+                case AnimationType.PassiveRotating:
+                case AnimationType.PassiveRotatingReverse:
+                    break;
+                case AnimationType.Loot: // 36
+                case AnimationType.LootReverse:
+                    return CharacterSoundType.Kneel;
+                case AnimationType.LocomotionSwimMove: // 37
+                    return CharacterSoundType.Swim;
+                case AnimationType.PassiveSitting:
+                    break;
+                case AnimationType.InstrumentDrum:
+                    break;
+                case AnimationType.InstrumentString:
+                    break;
+                case AnimationType.InstrumentWind:
+                    break;
+                case AnimationType.SpellCastDefense: // 42
+                case AnimationType.SpellCastGeneral: // 43
+                case AnimationType.SpellCastMissile: // 44
+                    return CharacterSoundType.TAttack;
+                case AnimationType.CombatFlyingKick: // 45
+                    return CharacterSoundType.FlyingKick;
+                case AnimationType.CombatRapidPunch: // 46
+                    return CharacterSoundType.RapidPunch;
+                case AnimationType.CombatHeavyPunch: // 47
+                    return CharacterSoundType.LargePunch;
+                case AnimationType.SocialNod:
+                    break;
+                case AnimationType.SocialAmazed:
+                    break;
+                case AnimationType.SocialPlead:
+                    break;
+                case AnimationType.SocialClap:
+                    break;
+                case AnimationType.SocialDistress:
+                    break;
+                case AnimationType.SocialBlush:
+                    break;
+                case AnimationType.SocialChuckle:
+                    break;
+                case AnimationType.SocialBurp:
+                    break;
+                case AnimationType.SocialDuck:
+                    break;
+                case AnimationType.SocialLookAround:
+                    break;
+                case AnimationType.SocialDance:
+                    break;
+                case AnimationType.SocialBlink:
+                    break;
+                case AnimationType.SocialGlare:
+                    break;
+                case AnimationType.SocialDrool:
+                    break;
+                case AnimationType.SocialKneel:
+                    break;
+                case AnimationType.SocialLaugh:
+                    break;
+                case AnimationType.SocialPoint:
+                    break;
+                case AnimationType.SocialPonder:
+                    break;
+                case AnimationType.SocialReady:
+                    break;
+                case AnimationType.SocialSalute:
+                    break;
+                case AnimationType.SocialShiver:
+                    break;
+                case AnimationType.SocialTapFoot:
+                    break;
+                case AnimationType.SocialBow:
+                    break;
+                case AnimationType.PassiveStandArmsAtSides:
+                    break;
+                case AnimationType.IdleStandArmsAtSides:
+                    break;
+                case AnimationType.IdleSit:
+                    break;
+            }
+
+            return CharacterSoundType.None;
+        }
+
+        public static bool IsWalkRunInterrupt(AnimationType animationType)
+        {
+            switch (animationType)
+            {
+                case AnimationType.PassiveStandSit:
+                case AnimationType.PassiveSitStand:
+                case AnimationType.IdleSit:
+                case AnimationType.IdleStand:
+                case AnimationType.PassiveStandArmsAtSides:
+                case AnimationType.PassiveStand:
+                case AnimationType.PassiveSitting:
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 }

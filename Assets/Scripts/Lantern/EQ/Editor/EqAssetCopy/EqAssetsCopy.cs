@@ -6,10 +6,45 @@ using UnityEngine;
 
 namespace Lantern.EQ.Editor.EqAssetCopy
 {
-    public static class EqAssetCopier
+    public class EqAssetCopier : LanternEditorWindow
     {
-        [MenuItem("EQ/Copy EQ Assets", false, 30)]
-        public static void Copy()
+        private static readonly List<string> Text1 = new()
+        {
+            "This process copies and prepares exported EverQuest assets for LanternEQ runtime use. Created bundles include:",
+            "\fCharacterSelect_Classic",
+            "\fClientData",
+            "\fMusic_Midi",
+            "\fSound",
+            "\fSprites",
+            "\fStartup",
+            "This usually takes around 5-10 minutes."
+        };
+
+        private static readonly List<string> Text2 = new()
+        {
+            "All EverQuest assets must be located in:",
+            "\fAssets/EQAssets/",
+        };
+
+        [MenuItem("EQ/Assets/Copy Assets", false, 20)]
+        public static void ShowImportDialog()
+        {
+            GetWindow<EqAssetCopier>("Copy Assets", typeof(EditorWindow));
+        }
+
+        private void OnGUI()
+        {
+            DrawInfoBox(Text1, "d_console.infoicon");
+            DrawInfoBox(Text2, "d_Collab.FolderConflict");
+            DrawHorizontalLine();
+
+            if (DrawButton("Start Copy"))
+            {
+                Copy();
+            }
+        }
+
+        private void Copy()
         {
             if (Application.isPlaying)
             {
@@ -17,6 +52,7 @@ namespace Lantern.EQ.Editor.EqAssetCopy
                 return;
             }
 
+            StartImport();
             var startTime = EditorApplication.timeSinceStartup;
 
             var sourceRootFolder = PathHelper.GetSystemPathFromUnity(PathHelper.GetEqAssetPath());
@@ -28,11 +64,20 @@ namespace Lantern.EQ.Editor.EqAssetCopy
             {
                 var sourcePath = Path.Combine(sourceRootFolder, atc.EqFolder);
                 var destPath = Path.Combine(destRootFolder, atc.AssetBundle.ToString());
-                foreach (var file in atc.AssetsToCopy)
+
+                // If no assets are specified, copy the whole folder
+                if (atc.AssetsToCopy == null || atc.AssetsToCopy.Count == 0)
                 {
-                    if (!CopyAssetToBundle(sourcePath, destPath, file, atc.AssetImportType))
+                    CopyFolderToBundle(sourcePath, destPath, atc.AssetImportType);
+                }
+                else
+                {
+                    foreach (var file in atc.AssetsToCopy)
                     {
-                        failedToCopy.Add(file);
+                        if (!CopyAssetToBundle(sourcePath, destPath, file, atc.AssetImportType))
+                        {
+                            failedToCopy.Add(file);
+                        }
                     }
                 }
             }
@@ -58,7 +103,7 @@ namespace Lantern.EQ.Editor.EqAssetCopy
                 if (ss.AssetIndices != null)
                 {
                     ss.AssetsToPack ??= new List<string>();
-                    foreach(var i in ss.AssetIndices)
+                    foreach (var i in ss.AssetIndices)
                     {
                         ss.AssetsToPack.Add($"{ss.AssetBase}{i:00}.png");
                     }
@@ -77,17 +122,41 @@ namespace Lantern.EQ.Editor.EqAssetCopy
             }
 
             AssetDatabase.Refresh();
-            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "Sprites", "sprites");
-            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "Startup", "startup");
-            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "ClientData", "clientdata");
-            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath()+ "CharacterSelect_Classic", "characterselect_classic");
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath() + "CharacterSelect_Classic",
+                "characterselect_classic");
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath() + "ClientData", "clientdata");
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath() + "Music_Midi", "music_midi");
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath() + "Sound", "sound");
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath() + "Sprites", "sprites");
+            ImportHelper.TagAllAssetsForBundles(PathHelper.GetAssetBundleContentPath() + "Startup", "startup");
             AssetDatabase.Refresh();
+            var importTime = FinishImport();
             EditorUtility.DisplayDialog("EQAssetsCopy",
-                $"EQ asset copy finished in {(int) (EditorApplication.timeSinceStartup - startTime)} seconds", "OK");
+                $"EQ asset copy finished in {importTime} seconds", "OK");
+        }
+
+        private static bool CopyFolderToBundle(string sourcePath, string destPath, AssetImportType assetImportType)
+        {
+            if (!Directory.Exists(sourcePath))
+            {
+                return false;
+            }
+
+            var files = Directory.GetFiles(sourcePath);
+
+            foreach (var file in files)
+            {
+                if (!CopyAssetToBundle(sourcePath, destPath, Path.GetFileName(file), assetImportType, true))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static bool CopyAssetToBundle(string sourcePath, string destPath, string file,
-            AssetImportType assetImportType)
+            AssetImportType assetImportType, bool overwriteExisting = false)
         {
             if (!Directory.Exists(sourcePath))
             {
@@ -110,12 +179,18 @@ namespace Lantern.EQ.Editor.EqAssetCopy
 
             if (File.Exists(destinationFile))
             {
-                return true;
+                if (!overwriteExisting)
+                {
+                    return true;
+                }
+
+                File.Delete(destinationFile);
             }
 
             File.Copy(sourceFile, destinationFile);
             var unityPath = PathHelper.GetUnityPathFromSystem(destPath);
 
+            // Move into postprocess
             switch (assetImportType)
             {
                 case AssetImportType.Texture2d:
@@ -186,6 +261,7 @@ namespace Lantern.EQ.Editor.EqAssetCopy
                             importer.SaveAndReimport();
                         }
                     }
+
                     break;
                 }
             }

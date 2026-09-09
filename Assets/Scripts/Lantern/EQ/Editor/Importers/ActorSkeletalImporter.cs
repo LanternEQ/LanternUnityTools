@@ -4,7 +4,7 @@ using Lantern.EQ.Editor.Helpers;
 using UnityEditor;
 using UnityEngine;
 
-namespace Lantern.Editor.Importers
+namespace Lantern.EQ.Editor.Importers
 {
     public static class ActorSkeletalImporter
     {

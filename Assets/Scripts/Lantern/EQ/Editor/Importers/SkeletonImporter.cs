@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using Infrastructure.EQ.TextParser;
 using Lantern.EQ.Animation;
 using Lantern.EQ.Editor.Helpers;
-using Lantern.EQ.Editor.Importers;
 using Lantern.EQ.Equipment;
 using Lantern.EQ.Helpers;
 using Lantern.EQ.Lighting;
 using UnityEditor;
 using UnityEngine;
 
-namespace Lantern.Editor.Importers
+namespace Lantern.EQ.Editor.Importers
 {
     public static class SkeletonImporter
     {
@@ -35,18 +34,35 @@ namespace Lantern.Editor.Importers
                 return;
             }
 
+            var primaryMeshes = new List<string>();
+            var secondaryMeshes = new List<string>();
+
             if (skeletonLines[0][0] == "meshes")
             {
                 for (int i = 1; i < skeletonLines[0].Count; ++i)
                 {
-                    meshesToCreate.Add(skeletonLines[0][i]);
+                    var mesh = skeletonLines[0][i];
+                    primaryMeshes.Add(mesh);
+                    meshesToCreate.Add(mesh);
+                }
+
+                skeletonLines.RemoveAt(0);
+            }
+
+            if (skeletonLines[0][0] == "secondary_meshes")
+            {
+                for (int i = 1; i < skeletonLines[0].Count; ++i)
+                {
+                    var mesh = skeletonLines[0][i];
+                    secondaryMeshes.Add(mesh);
+                    meshesToCreate.Add(mesh);
                 }
 
                 skeletonLines.RemoveAt(0);
             }
 
             var skeletonRoot = new GameObject(assetName);
-            var baseAnimation = skeletonRoot.AddComponent<Animation>();
+            var baseAnimation = skeletonRoot.AddComponent<UnityEngine.Animation>();
             baseAnimation.cullingType = AnimationCullingType.BasedOnRenderers;
 
             var bones = new Transform[skeletonLines.Count];
@@ -122,7 +138,7 @@ namespace Lantern.Editor.Importers
                 // LANTERN ONLY START
                 if(handler != null)
                 {
-                    if (meshName == assetName || meshName.EndsWith("00"))
+                    if (primaryMeshes.Contains(meshName))
                     {
                         handler.AddPrimaryMesh(go);
                     }
@@ -158,7 +174,7 @@ namespace Lantern.Editor.Importers
             // Spawn bones with attached meshes
             if (boneData.Count != 2)
             {
-                var meshName = boneData[2];
+                var meshName = string.IsNullOrEmpty(boneData[2]) ?  boneData[3] : boneData[2];
 
                 if (!string.IsNullOrEmpty(meshName))
                 {
@@ -206,7 +222,7 @@ namespace Lantern.Editor.Importers
                 return;
             }
 
-            List<string> childBones = TextParser.ParseStringToList(boneData[1]);
+            List<string> childBones = TextParser.ParseTextToList(boneData[1]);
 
             foreach (var childBoneIndex in childBones)
             {

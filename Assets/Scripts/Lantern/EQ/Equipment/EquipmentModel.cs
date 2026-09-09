@@ -1,23 +1,32 @@
 using System.Collections.Generic;
 using System.Linq;
+using Lantern.EQ.Animation;
 using UnityEngine;
 
-public class EquipmentModel : MonoBehaviour
+namespace Lantern.EQ.Equipment
 {
-    public List<Renderer> Renderers;
-
-    public void SetLayer(int layer)
+    /// <summary>
+    /// A directory class for all equipment models to avoid runtime component querying
+    /// </summary>
+    public class EquipmentModel : MonoBehaviour
     {
-        foreach (var r in Renderers)
+        public List<Renderer> Renderers;
+        public EquipmentAnimation EquipmentAnimation;
+
+        public void SetLayer(int layer)
         {
-            r.gameObject.layer = layer;
+            foreach (var r in Renderers)
+            {
+                r.gameObject.layer = layer;
+            }
         }
-    }
 
-    #if UNITY_EDITOR
-    public void FindRenderers()
-    {
-        Renderers = GetComponentsInChildren<Renderer>().ToList();
+#if UNITY_EDITOR
+        public void SetReferences(EquipmentAnimation equipmentAnimation)
+        {
+            EquipmentAnimation = equipmentAnimation;
+            Renderers = GetComponentsInChildren<Renderer>().ToList();
+        }
+#endif
     }
-    #endif
 }

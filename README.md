@@ -20,6 +20,14 @@ The importer supports:
   - Equipment particles
   - Post Velious zone support
 
+## Requirements
+Unity 2021.3.18f1 with the Universal Render Pipeline (URP) 12.1.10. Earlier Unity or URP
+versions will fail to compile the EQ shaders.
+
+Asset versions are paired. Use LanternExtractor 0.1.7 with LanternUnityTools 0.1.7. The
+intermediate format changes between releases, so mixing versions produces import errors or
+missing content.
+
 ## How To Use
 Please visit the [wiki](https://github.com/LanternEQ/LanternUnityTools/wiki) for more info.
 

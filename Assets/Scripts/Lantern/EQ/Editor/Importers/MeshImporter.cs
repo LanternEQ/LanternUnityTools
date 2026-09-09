@@ -12,7 +12,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 
-namespace Lantern.Editor.Importers
+namespace Lantern.EQ.Editor.Importers
 {
     public static class MeshImporter
     {

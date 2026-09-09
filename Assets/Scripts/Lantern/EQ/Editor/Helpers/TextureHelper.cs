@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Text;
-using Lantern.Editor.Importers;
+using Lantern.EQ.Editor.Importers;
 using UnityEditor;
 using UnityEngine;
 
@@ -50,7 +50,7 @@ namespace Lantern.EQ.Editor.Helpers
                     // Check in global texture folder
                     string globalPath = Path.Combine(PathHelper.GetEqAssetPath(), "equipment/Textures/") + textureName + ".png";
                     globalPath = PathHelper.GetSystemPathFromUnity(globalPath);
-                    
+
                     if (File.Exists(globalPath))
                     {
                         CopyAndRefresh(destination, globalPath, unityDestinationPath, isMasked);
@@ -100,7 +100,7 @@ namespace Lantern.EQ.Editor.Helpers
 
             // Edge case: Iksar females use the Iksar Citizen Female base texture.
             // Looking for additional textures with the ICF prefix won't find the
-            // additional faces. Instead, we must look for the IKF prefix.
+            // additional variants. Instead, we must look for the IKF prefix.
             if (modelName == "ikf" && texture.name == "icfhe0001")
             {
                 textureName = "ikfhe0001";
@@ -112,7 +112,7 @@ namespace Lantern.EQ.Editor.Helpers
             return faceTexture;
         }
 
-        public static Texture FindEquipmentVariant(Texture texture, int index, string requiredString)
+        public static Texture FindEquipmentVariant(string modelName, Texture texture, int index, string requiredString)
         {
             if (texture == null)
             {
@@ -120,14 +120,25 @@ namespace Lantern.EQ.Editor.Helpers
                 return null;
             }
 
-            if (texture.name.StartsWith("clkerf") || texture.name.StartsWith("clkerm"))
+            string textureName = texture.name;
+            StringBuilder variantName = new StringBuilder(textureName);
+
+            // Edge case: Iksar females use the Iksar Citizen Female base texture.
+            // Looking for additional textures with the ICF prefix won't find the
+            // additional variants. Instead, we must look for the IKF prefix.
+            if (modelName == "ikf" && textureName.StartsWith("icf"))
+            {
+                variantName[1] = 'k';
+            }
+
+            if (textureName.StartsWith("clkerf") || textureName.StartsWith("clkerm"))
             {
                 if (index == 0)
                 {
                     return texture;
                 }
 
-                if (!string.IsNullOrEmpty(requiredString) && !texture.name.Contains(requiredString))
+                if (!string.IsNullOrEmpty(requiredString) && !textureName.Contains(requiredString))
                 {
                     return null;
                 }
@@ -135,8 +146,6 @@ namespace Lantern.EQ.Editor.Helpers
                 return GetTexture("all", AssetImportType.Characters, "clk" + index.ToString("00") + "06", false, false);
             }
 
-            string textureName = texture.name;
-            StringBuilder variantName = new StringBuilder(textureName);
             string index10 = index.ToString("00");
             variantName[variantName.Length - 4] = index10.FirstOrDefault();
             variantName[variantName.Length - 3] = index10.LastOrDefault();

@@ -53,7 +53,6 @@ namespace Lantern.EQ.Equipment
             HandleMainMeshes(helmTexture);
             SetActiveMeshFromGroup(_secondaryMeshes, helmTexture);
             SetMeshMaterials(texture);
-            FixColdainKing();
 
             if (CharacterSoundsBase != null)
             {
@@ -65,17 +64,6 @@ namespace Lantern.EQ.Equipment
         {
             SetMeshMaterialsInGroup(_mainMeshes, index);
             SetMeshMaterialsInGroup(_secondaryMeshes, index);
-        }
-
-        private void FixColdainKing()
-        {
-            foreach (var mesh in _secondaryMeshes)
-            {
-                if(mesh.name == "cokhe01")
-                {
-                    mesh.SetActive(true);
-                }
-            }
         }
 
         private void SetMeshMaterialsInGroup(List<GameObject> meshes, int textureId)

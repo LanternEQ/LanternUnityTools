@@ -1,5 +1,6 @@
 ﻿using System;
-using Lantern.Editor.Importers;
+using System.IO;
+using Lantern.EQ.Editor.Importers;
 using UnityEngine;
 
 namespace Lantern.EQ.Editor.Helpers
@@ -107,6 +108,11 @@ namespace Lantern.EQ.Editor.Helpers
         public static string GetClientDataPath()
         {
             return "Assets/Content/ClientData/";
+        }
+
+        public static string GetRuntimeClientDataPath()
+        {
+            return Path.Combine(Application.streamingAssetsPath, "ClientData");
         }
 
         public static string GetSystemPathFromUnity(string unityPath)

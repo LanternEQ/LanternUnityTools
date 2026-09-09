@@ -15,11 +15,7 @@ namespace Lantern.EQ.Editor.AssetBundles
     /// </summary>
     public static class BuildAssetBundles
     {
-#if LANTERN_CLIENT
-        [MenuItem("Lantern/General/Build Asset Bundles", false, 0)]
-#else
-        [MenuItem("EQ/Build Asset Bundles", false, 100)]
-#endif
+        [MenuItem("EQ/Assets/Build Asset Bundles", false, 75)]
         public static void BuildAllAssetBundles()
         {
             BuildAllAssetBundles(true);
