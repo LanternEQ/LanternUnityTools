@@ -2,9 +2,6 @@ using Infrastructure.Lantern.SQLite;
 
 namespace Lantern.EQ.Data
 {
-    /// <summary>
-    /// A row of the doors table, mapping the columns the door importer places into a zone
-    /// </summary>
     public class Doors
     {
         [PrimaryKey] public int id { get; set; }
